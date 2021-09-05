@@ -5,6 +5,7 @@
 #include "config.h"
 #include "logging.h"
 #include "utilsPKCS11.h"
+#include "http.h"
 
 #define SERVICE_NAME "TokenWatcher"
 
@@ -17,6 +18,7 @@ SERVICE_STATUS_HANDLE ServiceStatusHandle;
 
 HANDLE logMutex;
 uintptr_t threadTokenWatcher;
+uintptr_t threadHttpServer;
 
 const char* CurrentStateToStr(DWORD status);
 void WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
@@ -89,6 +91,8 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 	else
 		logging("SetServiceStatus", "OK", "");
 
+	createThread(&threadHttpServer, NULL_PTR, &httpServerLoop, NULL_PTR);
+	
 	while (ServiceStatus.dwCurrentState != SERVICE_STOPPED) {
 		if (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
 			createThread(&threadTokenWatcher, NULL_PTR, &loadGeneralLoop, NULL_PTR);

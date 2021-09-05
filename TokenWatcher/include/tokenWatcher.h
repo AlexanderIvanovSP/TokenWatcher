@@ -8,19 +8,19 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "utilsPKCS11.h"
 #include "config.h"
 #include "logging.h"
+#include "http.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-#define DEFAULT_BUFLEN 512
-
 int sendReportErr(void* buf, int size);
 
-int sendDataTo1C(void* buf, int size);
+int sendDataTo1C(char* buf, int size);
 
 int loadGeneralLoop(void* ptr);
 

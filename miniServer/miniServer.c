@@ -134,7 +134,7 @@ int __cdecl main(void)
         iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
             printf(" Bytes received: %d\n", iResult);
-            printf(" JSON received:%.*s\n", iResult, recvbuf);
+            printf(" JSON received:\n%.*s\n", iResult, recvbuf);
         }
         else {
             printf("recv failed with error: %d\n", WSAGetLastError());

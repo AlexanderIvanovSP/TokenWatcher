@@ -18,7 +18,7 @@ static void writeLog(const char* funtionName, const char* status, const char* de
     err = fopen_s(&logfile, logPath, "a");
           
     if (!err) {
-        fprintf(logfile, "-->%s:%s  %s\n", funtionName, status, description);
+        fprintf_s(logfile, "-->%s:%s  %s\n", funtionName, status, description);
         fflush(logfile);
         fclose(logfile);
     }
