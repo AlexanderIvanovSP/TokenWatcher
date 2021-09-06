@@ -10,6 +10,8 @@
 #define DEFAULT_PORT "27015"
 #define DEFAULT_ADDR "127.0.0.1"
 
+#define DEFAULT_HTTP_PORT "8000"
+
 void getIP(char* out);
 
 void getPORT(char* out);
@@ -20,6 +22,10 @@ void offLogMode(char* out);
 
 void getReportMode(char* out);
 
+void getHttpPort(char* out);
+
 UINT getPkcs11DllMode();
+
+UINT getOsiLevel();
 
 #endif

@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClInclude Include="include\commonPKCS11.h" />
     <ClInclude Include="include\config.h" />
+    <ClInclude Include="include\http.h" />
     <ClInclude Include="include\logging.h" />
     <ClInclude Include="include\tokenWatcher.h" />
     <ClInclude Include="include\utilsPKCS11.h" />
@@ -161,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.c" />
+    <ClCompile Include="src\http.c" />
     <ClCompile Include="src\logging.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\tokenWatcher.c" />

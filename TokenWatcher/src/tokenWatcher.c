@@ -2,10 +2,13 @@
 #include "tokenWatcher.h"
 
 #define PKCS11_NOT_INITIALIZED	"{\"Status\": \"PKCS11_NOT_INITIALIZED\"}"
+#define MAX_SZ_ASC_TIME 26
+
+#define DEFAULT_HTTP_HEADER "HTTP/1.1 200 OK\r\nVersion: HTTP/1.1\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
 
 extern SERVICE_STATUS ServiceStatus;
 
-int sendDataTo1C(void* buf, int size)
+int sendDataTo1C(char* buf, int size)
 {
 	WSADATA wsaData;
 	SOCKET ConnectSocket = INVALID_SOCKET;
@@ -13,8 +16,11 @@ int sendDataTo1C(void* buf, int size)
 		* ptr = NULL,
 		hints;
 	int iResult;
-	char* ip[MAX_SZ_STR_CFG] = { 0 };
-	char* port[MAX_SZ_STR_CFG] = { 0 };
+	char ip[MAX_SZ_STR_CFG] = { 0 };
+	char port[MAX_SZ_STR_CFG] = { 0 };
+
+	char sendPostBuf[DEFAULT_SIZE_HTTP_BUF];
+	int sendPostBufLen = DEFAULT_SIZE_HTTP_BUF;
 
 	logging(__FUNCTION__, "TRY_SEND", buf);
 
@@ -35,7 +41,9 @@ int sendDataTo1C(void* buf, int size)
 	iResult = getaddrinfo((PCSTR)ip, (PCSTR)port, &hints, &result);
 	if (iResult != 0) {
 		logging(__FUNCTION__, "ERROR", "CFG getaddrinfo failed. Set DEFAULT_ADDR and DEFAULT_PORT");
-		iResult = getaddrinfo((PCSTR)DEFAULT_ADDR, (PCSTR)DEFAULT_PORT, &hints, &result);
+		sprintf_s(ip, MAX_SZ_STR_CFG,"%s", DEFAULT_ADDR);
+		sprintf_s(port, MAX_SZ_STR_CFG, "%s", DEFAULT_PORT);
+		iResult = getaddrinfo((PCSTR)ip, (PCSTR)port, &hints, &result);
 		if (iResult != 0) {
 			logging(__FUNCTION__, "ERROR", "DEFAULT getaddrinfo failed");
 			WSACleanup();
@@ -71,7 +79,18 @@ int sendDataTo1C(void* buf, int size)
 		return -1;
 	}
 
-	iResult = send(ConnectSocket, buf, size, 0);
+	switch (getOsiLevel())
+	{
+	case 4: 
+		sprintf_s(sendPostBuf, sendPostBufLen, "%.*s", size, buf);
+		break;
+	case 7:
+	default:
+		sprintf_s(sendPostBuf, sendPostBufLen, "POST / HTTP/1.1\r\nHost: %s\r\nContent-Type : application/json\r\nContent-Length : %d\r\n\r\n%.*s\n", ip, size, size, buf);
+		break;
+	}
+	
+	iResult = send(ConnectSocket, sendPostBuf, (int)strnlen_s(sendPostBuf, sendPostBufLen), 0);
 	if (iResult == SOCKET_ERROR) {
 		logging(__FUNCTION__, "ERROR", "send failed");
 		closesocket(ConnectSocket);
@@ -93,6 +112,20 @@ int sendDataTo1C(void* buf, int size)
 	return 0;
 }
 
+static void getDateASC(char* out)
+{
+	struct tm newtime;
+	__time64_t long_time;
+	char timebuf[MAX_SZ_ASC_TIME] = { 0 };
+
+	_time64(&long_time);
+	_localtime64_s(&newtime, &long_time);
+	asctime_s(timebuf, MAX_SZ_ASC_TIME, &newtime);
+	sprintf_s(out, MAX_SZ_ASC_TIME, "%.19s", timebuf);
+	
+	return;
+}
+
 static void getTokenInfo(void* slot_ptr)
 {
 	CK_SLOT_ID slot = *(CK_SLOT_ID*)slot_ptr;
@@ -100,6 +133,7 @@ static void getTokenInfo(void* slot_ptr)
 	CK_TOKEN_INFO_EXTENDED exTokenInfo;
 	CK_RV rv = CKR_OK;
 	char buf[DEFAULT_BUFLEN] = { 0 };
+	char timebuf[MAX_SZ_ASC_TIME] = { 0 };
 
 	rv = functionList->C_GetTokenInfo(slot, &tokenInfo);
 	logging("C_GetTokenInfo", rvToStr(rv), "");
@@ -114,10 +148,13 @@ static void getTokenInfo(void* slot_ptr)
 	if (rv != CKR_OK)
 		goto free_slot;
 
+	getDateASC(timebuf);
+
 	memset(buf, 0, DEFAULT_BUFLEN);
 	sprintf_s(buf, DEFAULT_BUFLEN,
 		"{\
 \"Status\": \"%s\",\
+\"TimeStamp\" \"%s\",\
 \"TokenType\": \"%8.8lx\",\
 \"TokenModel\" : \"%.*s\",\
 \"SerialNumber\" : \"%010d\",\
@@ -129,6 +166,7 @@ static void getTokenInfo(void* slot_ptr)
 }\
 }",
 rvToStr(rv),
+timebuf,
 exTokenInfo.ulTokenType,
 (int)sizeof(tokenInfo.model), tokenInfo.model,
 strtol(tokenInfo.serialNumber, NULL, (int)sizeof(tokenInfo.serialNumber)),
@@ -138,14 +176,17 @@ tokenInfo.firmwareVersion.major,
 tokenInfo.firmwareVersion.minor
 );
 
-	sendDataTo1C(buf, (int)strlen(buf));
+	memset(response_body,0, DEFAULT_SIZE_HTTP_BODY);
+	sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "%s", buf);
+
+	sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 	free(slot_ptr);
 	return;
 
 free_slot:
 	memset(buf, 0, DEFAULT_BUFLEN);
 	sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", rvToStr(rv));
-	sendReportErr(buf, (int)strlen(buf));
+	sendReportErr(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 	free(slot_ptr);
 	return;
 }
@@ -192,7 +233,7 @@ static void monitorSlotEvent(void* ptr)
 	if (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
 		memset(buf, 0, DEFAULT_BUFLEN);
 		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", rvToStr(rv));
-		sendReportErr(buf, (int)strlen(buf));
+		sendReportErr(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 	}
 
 	_endthread();

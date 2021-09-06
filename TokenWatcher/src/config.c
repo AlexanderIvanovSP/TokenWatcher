@@ -5,6 +5,8 @@
 #define CFG_SECTION_CONNECT "CONNECTION"
 #define CFG_KEY_IP "IP"
 #define CFG_KEY_PORT "PORT"
+#define CFG_KEY_HTTP_PORT "HTTP_PORT"
+#define CFG_KEY_OSI_LEVEL "OSI_LEVEL"
 
 #define CFG_SECTION_DEBUG "DEBUG"
 #define CFG_KEY_PKCS11_MODE "PKCS11_MODE"
@@ -12,8 +14,10 @@
 #define CFG_KEY_REPORT "REPORT"
 
 #define DEFAULT_LOG_MODE "no"
-#define DEFAULT_PKCS11_MODE "0"
+#define DEFAULT_PKCS11_MODE 0
 #define DEFAULT_REPORT_MODE "no"
+#define DEFAULT_OSI_LEVEL 7
+
 
 static DWORD readConfigIni(char* section, char* key, char* out) {
 
@@ -50,6 +54,18 @@ void getPORT(char* out) {
 	return;
 }
 
+UINT getOsiLevel() {
+
+	char cfgPath[MAX_PATH] = { 0 };
+
+	GetModuleFileName(GetModuleHandle(NULL), cfgPath, MAX_PATH);
+	*strrchr(cfgPath, '\\') = '\0';
+	strcat_s(cfgPath, MAX_PATH, "\\");
+	strcat_s(cfgPath, MAX_PATH, NAME_CONFIG_FILE);
+
+	return GetPrivateProfileInt(CFG_SECTION_CONNECT, CFG_KEY_OSI_LEVEL, DEFAULT_OSI_LEVEL, cfgPath);
+}
+
 UINT getPkcs11DllMode() {
 
 	char cfgPath[MAX_PATH] = { 0 };
@@ -59,7 +75,7 @@ UINT getPkcs11DllMode() {
 	strcat_s(cfgPath, MAX_PATH, "\\");
 	strcat_s(cfgPath, MAX_PATH, NAME_CONFIG_FILE);
 
-	return GetPrivateProfileInt(CFG_SECTION_DEBUG, CFG_KEY_PKCS11_MODE, 0, cfgPath);
+	return GetPrivateProfileInt(CFG_SECTION_DEBUG, CFG_KEY_PKCS11_MODE, DEFAULT_PKCS11_MODE, cfgPath);
 }
 
 void getLogMode(char* out) {
@@ -77,6 +93,15 @@ void getReportMode(char* out) {
 
 	return;
 }
+
+void getHttpPort(char* out) {
+
+	if (!readConfigIni(CFG_SECTION_CONNECT, CFG_KEY_HTTP_PORT, out))
+		strcpy_s(out, MAX_SZ_STR_CFG, DEFAULT_HTTP_PORT);
+
+	return;
+}
+
 
 void offLogMode(char* out) {
 
