@@ -86,7 +86,7 @@ int sendDataTo1C(char* buf, int size)
 		break;
 	case 7:
 	default:
-		sprintf_s(sendPostBuf, sendPostBufLen, "POST / HTTP/1.1\r\nHost: %s\r\nContent-Type : application/json\r\nContent-Length : %d\r\n\r\n%.*s\n", ip, size, size, buf);
+		sprintf_s(sendPostBuf, sendPostBufLen, "POST / HTTP/1.1\r\nHost: %s:%s\r\nContent-Type : application/json\r\nContent-Length : %d\r\n\r\n%.*s", ip, port, size, size, buf);
 		break;
 	}
 	
@@ -154,7 +154,7 @@ static void getTokenInfo(void* slot_ptr)
 	sprintf_s(buf, DEFAULT_BUFLEN,
 		"{\
 \"Status\": \"%s\",\
-\"TimeStamp\" \"%s\",\
+\"TimeStamp\": \"%s\",\
 \"TokenType\": \"%8.8lx\",\
 \"TokenModel\" : \"%.*s\",\
 \"SerialNumber\" : \"%010d\",\
@@ -176,9 +176,8 @@ tokenInfo.firmwareVersion.major,
 tokenInfo.firmwareVersion.minor
 );
 
-	memset(response_body,0, DEFAULT_SIZE_HTTP_BODY);
+	memset(response_body, 0, DEFAULT_SIZE_HTTP_BODY);
 	sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "%s", buf);
-
 	sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 	free(slot_ptr);
 	return;
@@ -186,7 +185,7 @@ tokenInfo.firmwareVersion.minor
 free_slot:
 	memset(buf, 0, DEFAULT_BUFLEN);
 	sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", rvToStr(rv));
-	sendReportErr(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
+	sendReport(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 	free(slot_ptr);
 	return;
 }
@@ -233,7 +232,7 @@ static void monitorSlotEvent(void* ptr)
 	if (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
 		memset(buf, 0, DEFAULT_BUFLEN);
 		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", rvToStr(rv));
-		sendReportErr(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
+		sendReport(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 	}
 
 	_endthread();
@@ -269,12 +268,13 @@ static void convertPkcs11DllModeToPath(UINT mode, char* out)
 	return;
 }
 
-int sendReportErr(void* buf, int size) 
+int sendReport(char* buf, int size) 
 {
 	char REPORT_MODE[MAX_SZ_STR_CFG] = { 0 };
 	getReportMode(REPORT_MODE);
 	if (strcmp(REPORT_MODE, "yes"))
 		return 0;
+
 	return sendDataTo1C(buf, size);
 }
 
@@ -283,9 +283,13 @@ int loadGeneralLoop(void* ptr)
 	int errorCode = 1;
 	uintptr_t thread;
 	char pkcsDllPath[MAX_PATH] = { 0 };
+	char timebuf[MAX_SZ_ASC_TIME] = { 0 };
 
 	convertPkcs11DllModeToPath(getPkcs11DllMode(), pkcsDllPath);
 	logging(__FUNCTION__, "OK", "START_LOOP");
+
+	getDateASC(timebuf);
+	sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", rvToStr(CKR_TOKEN_NOT_PRESENT), timebuf);
 	
 	while (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
 
@@ -303,7 +307,7 @@ int loadGeneralLoop(void* ptr)
 exit:
 	if (errorCode) {
 		logging(__FUNCTION__, "ERROR", PKCS11_NOT_INITIALIZED);
-		sendReportErr(PKCS11_NOT_INITIALIZED, (int)strlen(PKCS11_NOT_INITIALIZED));
+		sendReport(PKCS11_NOT_INITIALIZED, (int)strlen(PKCS11_NOT_INITIALIZED));
 	}
 	else
 		logging(__FUNCTION__, "OK", "END_LOOP");

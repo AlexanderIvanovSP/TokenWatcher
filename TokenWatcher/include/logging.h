@@ -10,4 +10,6 @@ extern char LOG_MODE[MAX_SZ_STR_CFG];
 
 void logging(const char* funtionName, const char* status, const char* description);
 
+void offLogMode();
+
 #endif

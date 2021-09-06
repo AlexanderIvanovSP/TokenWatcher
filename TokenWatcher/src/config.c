@@ -101,11 +101,3 @@ void getHttpPort(char* out) {
 
 	return;
 }
-
-
-void offLogMode(char* out) {
-
-	strcpy_s(out, MAX_SZ_STR_CFG, "no");
-
-	return;
-}

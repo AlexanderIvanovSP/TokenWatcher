@@ -78,8 +78,6 @@ static int  startHttpServer()
         return 1;
     }
 
-    sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"Status\": \"%s\"}", rvToStr(CKR_TOKEN_NOT_PRESENT));
-
     while (ServiceStatus.dwCurrentState == SERVICE_RUNNING)
     {
         ClientSocket = accept(ListenSocket, (struct sockaddr*)&client_addr, (socklen_t*)&addrlen);
@@ -92,7 +90,7 @@ static int  startHttpServer()
 
         memset(sendbuf, 0, sendbuflen);
         
-        sprintf_s(sendbuf, sendbuflen, "%s%zu\r\n\r\n%s\n", DEFAULT_HTTP_HEADER, strnlen_s(response_body, DEFAULT_SIZE_HTTP_BODY), response_body);
+        sprintf_s(sendbuf, sendbuflen, "%s%zu\r\n\r\n%s", DEFAULT_HTTP_HEADER, strnlen_s(response_body, DEFAULT_SIZE_HTTP_BODY), response_body);
         
         if (send(ClientSocket, sendbuf, (int)strnlen_s(sendbuf, sendbuflen), 0) != SOCKET_ERROR)
         {

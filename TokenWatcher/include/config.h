@@ -18,8 +18,6 @@ void getPORT(char* out);
 
 void getLogMode(char* out);
 
-void offLogMode(char* out);
-
 void getReportMode(char* out);
 
 void getHttpPort(char* out);

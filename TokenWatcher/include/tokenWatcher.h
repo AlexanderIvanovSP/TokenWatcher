@@ -18,7 +18,7 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-int sendReportErr(void* buf, int size);
+int sendReport(char* buf, int size);
 
 int sendDataTo1C(char* buf, int size);
 

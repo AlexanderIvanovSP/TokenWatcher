@@ -34,14 +34,14 @@ int main() {
 
 	logMutex = CreateMutex(NULL, FALSE, NULL);
 	if (logMutex == NULL)
-		offLogMode(LOG_MODE);
+		offLogMode();
 	else
 		getLogMode(LOG_MODE);
 
 	if (!StartServiceCtrlDispatcher(DispatchTable))
 	{
 		logging("StartServiceCtrlDispatcher", "ERROR", SERVICE_DISPATCHER_ERR);
-		sendReportErr(SERVICE_DISPATCHER_ERR, (int)strlen(SERVICE_DISPATCHER_ERR));
+		sendReport(SERVICE_DISPATCHER_ERR, (int)strlen(SERVICE_DISPATCHER_ERR));
 	}
 	else
 		logging("StartServiceCtrlDispatcher", "OK", "");
@@ -74,7 +74,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	if (ServiceStatusHandle == (SERVICE_STATUS_HANDLE)0) {
 		logging(__FUNCTION__, "ERROR", SERVICE_HANDLER_ERR);
-		sendReportErr(SERVICE_HANDLER_ERR, (int)strlen(SERVICE_HANDLER_ERR));
+		sendReport(SERVICE_HANDLER_ERR, (int)strlen(SERVICE_HANDLER_ERR));
 		return;
 	}
 	else
@@ -86,7 +86,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 		logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-		sendReportErr(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
+		sendReport(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
 	}
 	else
 		logging("SetServiceStatus", "OK", "");
@@ -140,12 +140,12 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
 		logging(__FUNCTION__, "OK", CurrentStateToStr(SERVICE_STOPPED));
 		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", CurrentStateToStr(SERVICE_STOPPED));
-		sendReportErr(buf, (int)strlen(buf));
+		sendReport(buf, (int)strlen(buf));
 		free_pkcs11();
 
 		if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 			logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-			sendReportErr(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
+			sendReport(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
 		}
 
 		return;
@@ -153,7 +153,7 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 	case SERVICE_CONTROL_INTERROGATE:
 		logging(__FUNCTION__, "OK", CurrentStateToStr(ServiceStatus.dwCurrentState));
 		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\", \"PKCS11\": %d}", CurrentStateToStr(ServiceStatus.dwCurrentState), pkcs11LibState);
-		sendDataTo1C(buf, (int)strlen(buf));
+		sendReport(buf, (int)strlen(buf));
 		break;
 
 	default:
@@ -163,7 +163,7 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 		logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-		sendReportErr(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
+		sendReport(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
 		return;
 	}
 	else

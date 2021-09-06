@@ -53,3 +53,10 @@ void logging(const char* funtionName, const char* status, const char* descriptio
 
     return;
 }
+
+void offLogMode() {
+
+    strcpy_s(LOG_MODE, MAX_SZ_STR_CFG, "no");
+
+    return;
+}
