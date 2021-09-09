@@ -112,18 +112,6 @@ int sendDataTo1C(char* buf, int size)
 	return 0;
 }
 
-void getDateISO8601(char* out)
-{
-	struct tm newtime;
-	__time64_t long_time;
-	
-	_time64(&long_time);
-	_localtime64_s(&newtime, &long_time);
-	strftime(out, MAX_SZ_ISO8601_TIME, "%FT%TZ", &newtime);
-
-	return;
-}
-
 static void getTokenInfo(void* slot_ptr)
 {
 	CK_SLOT_ID slot = *(CK_SLOT_ID*)slot_ptr;

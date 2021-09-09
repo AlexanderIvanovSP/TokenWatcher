@@ -2,7 +2,6 @@
 #define TOKENWATCHER_H
 
 #define WIN32_LEAN_AND_MEAN
-#define MAX_SZ_ISO8601_TIME sizeof("2011-10-08T07:07:09Z")
 
 #include <windows.h>
 #include <winsock2.h>
@@ -24,7 +23,5 @@ int sendReport(const char* err);
 int sendDataTo1C(char* buf, int size);
 
 int loadGeneralLoop(void* ptr);
-
-void getDateISO8601(char* out);
 
 #endif

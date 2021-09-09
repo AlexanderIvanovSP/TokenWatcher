@@ -8,11 +8,13 @@ static void writeLog(const char* funtionName, const char* status, const char* de
 
     FILE* logfile = NULL;
     errno_t err = 0;
+    char timebuf[MAX_SZ_ISO8601_TIME] = { 0 };
 
     err = fopen_s(&logfile, logPath, "a");
           
     if (!err) {
-        fprintf_s(logfile, "-->%s:%s  %s\n", funtionName, status, description);
+        getDateISO8601(timebuf);
+        fprintf_s(logfile, "[%s]-->%s:%s  %s\n", timebuf, funtionName, status, description);
         fflush(logfile);
         fclose(logfile);
     }
@@ -51,6 +53,18 @@ void logging(const char* funtionName, const char* status, const char* descriptio
 void offLogMode() {
 
     strcpy_s(LOG_MODE, MAX_SZ_STR_CFG, "no");
+
+    return;
+}
+
+void getDateISO8601(char* out)
+{
+    struct tm newtime;
+    __time64_t long_time;
+
+    _time64(&long_time);
+    _localtime64_s(&newtime, &long_time);
+    strftime(out, MAX_SZ_ISO8601_TIME, "%FT%TZ", &newtime);
 
     return;
 }
