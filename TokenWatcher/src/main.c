@@ -9,9 +9,9 @@
 
 #define SERVICE_NAME "TokenWatcher"
 
-#define SERVICE_DISPATCHER_ERR	"{\"Status\": \"SERVICE_DISPATCHER_ERR\"}"
-#define SERVICE_HANDLER_ERR		"{\"Status\": \"SERVICE_HANDLER_ERR\"}"
-#define SERVICE_SET_STATUS_ERR	"{\"Status\": \"SERVICE_SET_STATUS_ERR\"}"
+#define SERVICE_DISPATCHER_ERR	"SERVICE_DISPATCHER_ERR"
+#define SERVICE_HANDLER_ERR		"SERVICE_HANDLER_ERR"
+#define SERVICE_SET_STATUS_ERR	"SERVICE_SET_STATUS_ERR"
 
 SERVICE_STATUS ServiceStatus;
 SERVICE_STATUS_HANDLE ServiceStatusHandle;
@@ -19,6 +19,7 @@ SERVICE_STATUS_HANDLE ServiceStatusHandle;
 HANDLE logMutex;
 uintptr_t threadTokenWatcher;
 uintptr_t threadHttpServer;
+char mainPath[MAX_PATH] = { 0 };
 
 const char* CurrentStateToStr(DWORD status);
 void WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
@@ -31,6 +32,18 @@ int main() {
 #if _DEBUG
 	Sleep(10000);
 #endif
+	
+	GetModuleFileName(GetModuleHandle(NULL), mainPath, MAX_PATH);
+	*strrchr(mainPath, '\\') = '\0';
+	strcat_s(mainPath, MAX_PATH, "\\");
+
+	strcpy_s(cfgPath, MAX_PATH, mainPath);
+	strcat_s(cfgPath, MAX_PATH, NAME_CONFIG_FILE);
+
+	strcpy_s(logPath, MAX_PATH, mainPath);
+	strcat_s(logPath, MAX_PATH, LOG_FILE_NAME);
+	
+	
 
 	logMutex = CreateMutex(NULL, FALSE, NULL);
 	if (logMutex == NULL)
@@ -41,7 +54,7 @@ int main() {
 	if (!StartServiceCtrlDispatcher(DispatchTable))
 	{
 		logging("StartServiceCtrlDispatcher", "ERROR", SERVICE_DISPATCHER_ERR);
-		sendReport(SERVICE_DISPATCHER_ERR, (int)strlen(SERVICE_DISPATCHER_ERR));
+		sendReport(SERVICE_DISPATCHER_ERR);
 	}
 	else
 		logging("StartServiceCtrlDispatcher", "OK", "");
@@ -74,7 +87,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	if (ServiceStatusHandle == (SERVICE_STATUS_HANDLE)0) {
 		logging(__FUNCTION__, "ERROR", SERVICE_HANDLER_ERR);
-		sendReport(SERVICE_HANDLER_ERR, (int)strlen(SERVICE_HANDLER_ERR));
+		sendReport(SERVICE_HANDLER_ERR);
 		return;
 	}
 	else
@@ -86,7 +99,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 		logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-		sendReport(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
+		sendReport(SERVICE_SET_STATUS_ERR);
 	}
 	else
 		logging("SetServiceStatus", "OK", "");
@@ -120,6 +133,7 @@ const char* CurrentStateToStr(DWORD status)
 void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
 	char buf[DEFAULT_BUFLEN] = { 0 };
+	char timebuf[MAX_SZ_ISO8601_TIME] = { 0 };
 
 	switch (Opcode) {
 #if _DEBUG
@@ -139,21 +153,21 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 		ServiceStatus.dwWaitHint = 0;
 
 		logging(__FUNCTION__, "OK", CurrentStateToStr(SERVICE_STOPPED));
-		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", CurrentStateToStr(SERVICE_STOPPED));
-		sendReport(buf, (int)strlen(buf));
+		sendReport(CurrentStateToStr(SERVICE_STOPPED));
 		free_pkcs11();
 
 		if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 			logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-			sendReport(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
+			sendReport(SERVICE_SET_STATUS_ERR);
 		}
 
 		return;
 
 	case SERVICE_CONTROL_INTERROGATE:
+		getDateISO8601(timebuf);
 		logging(__FUNCTION__, "OK", CurrentStateToStr(ServiceStatus.dwCurrentState));
-		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\", \"PKCS11\": %d}", CurrentStateToStr(ServiceStatus.dwCurrentState), pkcs11LibState);
-		sendReport(buf, (int)strlen(buf));
+		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"INTERROGATE\", \"Service\": \"%s\", \"PKCS11\": \"%d\", \"TimeStamp\": \"%s\"}", CurrentStateToStr(ServiceStatus.dwCurrentState), pkcs11LibState, timebuf);
+		sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 		break;
 
 	default:
@@ -163,7 +177,7 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 		logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-		sendReport(SERVICE_SET_STATUS_ERR, (int)strlen(SERVICE_SET_STATUS_ERR));
+		sendReport(SERVICE_SET_STATUS_ERR);
 		return;
 	}
 	else

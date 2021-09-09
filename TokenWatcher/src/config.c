@@ -1,7 +1,5 @@
 #include "config.h"
 
-#define NAME_CONFIG_FILE "config.ini"
-
 #define CFG_SECTION_CONNECT "CONNECTION"
 #define CFG_KEY_IP "IP"
 #define CFG_KEY_PORT "PORT"
@@ -18,15 +16,9 @@
 #define DEFAULT_REPORT_MODE "no"
 #define DEFAULT_OSI_LEVEL 7
 
+char cfgPath[MAX_PATH];
 
 static DWORD readConfigIni(char* section, char* key, char* out) {
-
-	char cfgPath[MAX_PATH] = { 0 };
-
-	GetModuleFileName(GetModuleHandle(NULL), cfgPath, MAX_PATH);
-	*strrchr(cfgPath, '\\') = '\0';
-	strcat_s(cfgPath, MAX_PATH, "\\");
-	strcat_s(cfgPath, MAX_PATH, NAME_CONFIG_FILE);
 
 	return GetPrivateProfileString(
 		section,

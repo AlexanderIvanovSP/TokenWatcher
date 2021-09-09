@@ -12,6 +12,10 @@
 
 #define DEFAULT_HTTP_PORT "8000"
 
+#define NAME_CONFIG_FILE "config.ini"
+
+extern char cfgPath[MAX_PATH];
+
 void getIP(char* out);
 
 void getPORT(char* out);

@@ -1,8 +1,8 @@
 ﻿
 #include "tokenWatcher.h"
 
-#define PKCS11_NOT_INITIALIZED	"{\"Status\": \"PKCS11_NOT_INITIALIZED\"}"
-#define MAX_SZ_ASC_TIME 26
+#define PKCS11_NOT_INITIALIZED	"PKCS11_NOT_INITIALIZED"
+
 
 #define DEFAULT_HTTP_HEADER "HTTP/1.1 200 OK\r\nVersion: HTTP/1.1\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
 
@@ -81,12 +81,12 @@ int sendDataTo1C(char* buf, int size)
 
 	switch (getOsiLevel())
 	{
-	case 4: 
-		sprintf_s(sendPostBuf, sendPostBufLen, "%.*s", size, buf);
-		break;
-	case 7:
-	default:
+	case 7: 
 		sprintf_s(sendPostBuf, sendPostBufLen, "POST / HTTP/1.1\r\nHost: %s:%s\r\nContent-Type : application/json\r\nContent-Length : %d\r\n\r\n%.*s", ip, port, size, size, buf);
+		break;
+	case 4:
+	default:
+		sprintf_s(sendPostBuf, sendPostBufLen, "%.*s", size, buf);
 		break;
 	}
 	
@@ -112,17 +112,15 @@ int sendDataTo1C(char* buf, int size)
 	return 0;
 }
 
-static void getDateASC(char* out)
+void getDateISO8601(char* out)
 {
 	struct tm newtime;
 	__time64_t long_time;
-	char timebuf[MAX_SZ_ASC_TIME] = { 0 };
-
+	
 	_time64(&long_time);
 	_localtime64_s(&newtime, &long_time);
-	asctime_s(timebuf, MAX_SZ_ASC_TIME, &newtime);
-	sprintf_s(out, MAX_SZ_ASC_TIME, "%.19s", timebuf);
-	
+	strftime(out, MAX_SZ_ISO8601_TIME, "%FT%TZ", &newtime);
+
 	return;
 }
 
@@ -133,7 +131,7 @@ static void getTokenInfo(void* slot_ptr)
 	CK_TOKEN_INFO_EXTENDED exTokenInfo;
 	CK_RV rv = CKR_OK;
 	char buf[DEFAULT_BUFLEN] = { 0 };
-	char timebuf[MAX_SZ_ASC_TIME] = { 0 };
+	char timebuf[MAX_SZ_ISO8601_TIME] = { 0 };
 
 	rv = functionList->C_GetTokenInfo(slot, &tokenInfo);
 	logging("C_GetTokenInfo", rvToStr(rv), "");
@@ -148,7 +146,7 @@ static void getTokenInfo(void* slot_ptr)
 	if (rv != CKR_OK)
 		goto free_slot;
 
-	getDateASC(timebuf);
+	getDateISO8601(timebuf);
 
 	memset(buf, 0, DEFAULT_BUFLEN);
 	sprintf_s(buf, DEFAULT_BUFLEN,
@@ -183,9 +181,7 @@ tokenInfo.firmwareVersion.minor
 	return;
 
 free_slot:
-	memset(buf, 0, DEFAULT_BUFLEN);
-	sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", rvToStr(rv));
-	sendReport(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
+	sendReport(rvToStr(rv));
 	free(slot_ptr);
 	return;
 }
@@ -202,7 +198,6 @@ static void tokenInserted(CK_SLOT_ID slot)
 static void monitorSlotEvent(void* ptr)
 {
 	CK_RV rv = CKR_OK;
-	char buf[DEFAULT_BUFLEN] = { 0 };
 
 	while (1) {
 		CK_SLOT_ID slot;
@@ -230,9 +225,7 @@ static void monitorSlotEvent(void* ptr)
 	}
 
 	if (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
-		memset(buf, 0, DEFAULT_BUFLEN);
-		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\"}", rvToStr(rv));
-		sendReport(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
+		sendReport(rvToStr(rv));
 	}
 
 	_endthread();
@@ -268,14 +261,20 @@ static void convertPkcs11DllModeToPath(UINT mode, char* out)
 	return;
 }
 
-int sendReport(char* buf, int size) 
+int sendReport(const char* err)
 {
 	char REPORT_MODE[MAX_SZ_STR_CFG] = { 0 };
+	char buf[DEFAULT_BUFLEN] = { 0 };
+	char timebuf[MAX_SZ_ISO8601_TIME] = { 0 };
+
 	getReportMode(REPORT_MODE);
 	if (strcmp(REPORT_MODE, "yes"))
 		return 0;
 
-	return sendDataTo1C(buf, size);
+	getDateISO8601(timebuf);
+	sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", err, timebuf);
+
+	return sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 }
 
 int loadGeneralLoop(void* ptr)
@@ -283,12 +282,12 @@ int loadGeneralLoop(void* ptr)
 	int errorCode = 1;
 	uintptr_t thread;
 	char pkcsDllPath[MAX_PATH] = { 0 };
-	char timebuf[MAX_SZ_ASC_TIME] = { 0 };
+	char timebuf[MAX_SZ_ISO8601_TIME] = { 0 };
 
 	convertPkcs11DllModeToPath(getPkcs11DllMode(), pkcsDllPath);
 	logging(__FUNCTION__, "OK", "START_LOOP");
 
-	getDateASC(timebuf);
+	getDateISO8601(timebuf);
 	sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", rvToStr(CKR_TOKEN_NOT_PRESENT), timebuf);
 	
 	while (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
@@ -307,7 +306,7 @@ int loadGeneralLoop(void* ptr)
 exit:
 	if (errorCode) {
 		logging(__FUNCTION__, "ERROR", PKCS11_NOT_INITIALIZED);
-		sendReport(PKCS11_NOT_INITIALIZED, (int)strlen(PKCS11_NOT_INITIALIZED));
+		sendReport(PKCS11_NOT_INITIALIZED);
 	}
 	else
 		logging(__FUNCTION__, "OK", "END_LOOP");

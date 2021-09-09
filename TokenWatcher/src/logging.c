@@ -1,8 +1,7 @@
 #include "logging.h"
 
-#define LOG_FILE_NAME "tokenWatcher.log"
-
 char LOG_MODE[MAX_SZ_STR_CFG] = { 0 };
+char logPath[MAX_PATH] = { 0 };
 extern HANDLE logMutex;
 
 static void writeLog(const char* funtionName, const char* status, const char* description) {
@@ -10,11 +9,6 @@ static void writeLog(const char* funtionName, const char* status, const char* de
     FILE* logfile = NULL;
     errno_t err = 0;
 
-    char logPath[MAX_PATH] = { 0 };
-    GetModuleFileName(GetModuleHandle(NULL), logPath, MAX_PATH);
-    *strrchr(logPath, '\\') = '\0';
-    strcat_s(logPath, MAX_PATH, "\\");
-    strcat_s(logPath, MAX_PATH, LOG_FILE_NAME);
     err = fopen_s(&logfile, logPath, "a");
           
     if (!err) {
