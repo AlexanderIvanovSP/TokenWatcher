@@ -18,6 +18,8 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
+#define DEFAULT_BUFLEN 512
+
 int sendReport(const char* err);
 
 int sendDataTo1C(char* buf, int size);

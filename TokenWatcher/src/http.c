@@ -6,6 +6,7 @@
 
 extern SERVICE_STATUS ServiceStatus;
 char response_body[DEFAULT_SIZE_HTTP_BODY] = { 0 };
+char HTTP_MODE[MAX_SZ_STR_CFG] = { 0 };
 
 static int  startHttpServer()
 {
@@ -113,6 +114,11 @@ static int  startHttpServer()
 
 void httpServerLoop(void* ptr)
 {
+
+    getHttpMode(HTTP_MODE);
+    if (strcmp(HTTP_MODE, "yes"))
+        return;
+
     while(ServiceStatus.dwCurrentState != SERVICE_STOPPED)
         startHttpServer();
 }

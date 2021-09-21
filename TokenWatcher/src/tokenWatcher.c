@@ -7,6 +7,7 @@
 #define DEFAULT_HTTP_HEADER "HTTP/1.1 200 OK\r\nVersion: HTTP/1.1\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
 
 extern SERVICE_STATUS ServiceStatus;
+extern char mainPath[MAX_PATH];
 
 int sendDataTo1C(char* buf, int size)
 {
@@ -162,8 +163,12 @@ tokenInfo.firmwareVersion.major,
 tokenInfo.firmwareVersion.minor
 );
 
-	memset(response_body, 0, DEFAULT_SIZE_HTTP_BODY);
-	sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "%s", buf);
+	if (!strcmp(HTTP_MODE, "yes"))
+	{
+		memset(response_body, 0, DEFAULT_SIZE_HTTP_BODY);
+		sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "%s", buf);
+	}
+
 	sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 	free(slot_ptr);
 	return;
@@ -225,15 +230,11 @@ static void convertPkcs11DllModeToPath(UINT mode, char* out)
 	switch (mode)
 	{
 	case 1:
-		GetModuleFileName(GetModuleHandle(NULL), path, MAX_PATH);
-		*strrchr(path, '\\') = '\0';
-		strcat_s(path, MAX_PATH, "\\");
+		strcpy_s(path, MAX_PATH, mainPath);
 		strcat_s(path, MAX_PATH, PKCS11_LIBRARY_NAME);
 		break;
 	case 2:
-		GetModuleFileName(GetModuleHandle(NULL), path, MAX_PATH);
-		*strrchr(path, '\\') = '\0';
-		strcat_s(path, MAX_PATH, "\\");
+		strcpy_s(path, MAX_PATH, mainPath);
 		strcat_s(path, MAX_PATH, PKCS11ECP_LIBRARY_NAME);
 		break;
 	case 3:
@@ -275,8 +276,11 @@ int loadGeneralLoop(void* ptr)
 	convertPkcs11DllModeToPath(getPkcs11DllMode(), pkcsDllPath);
 	logging(__FUNCTION__, "OK", "START_LOOP");
 
-	getDateISO8601(timebuf);
-	sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", rvToStr(CKR_TOKEN_NOT_PRESENT), timebuf);
+	if (!strcmp(HTTP_MODE, "yes"))
+	{
+		getDateISO8601(timebuf);
+		sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", rvToStr(CKR_TOKEN_NOT_PRESENT), timebuf);
+	}
 	
 	while (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
 

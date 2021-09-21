@@ -24,6 +24,8 @@ void getLogMode(char* out);
 
 void getReportMode(char* out);
 
+void getHttpMode(char* out);
+
 void getHttpPort(char* out);
 
 UINT getPkcs11DllMode();

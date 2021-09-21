@@ -161,6 +161,7 @@
     <ClInclude Include="pkcs11_headers\rtpkcs11.h" />
     <ClInclude Include="pkcs11_headers\rtpkcs11f.h" />
     <ClInclude Include="pkcs11_headers\rtpkcs11t.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\config.c" />
@@ -169,6 +170,9 @@
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\tokenWatcher.c" />
     <ClCompile Include="src\utilsPKCS11.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TokenWatcher.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

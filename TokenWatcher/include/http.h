@@ -15,11 +15,12 @@
 
 #pragma comment (lib, "Ws2_32.lib")
 
-#define DEFAULT_BUFLEN 512
-#define DEFAULT_SIZE_HTTP_BUF (DEFAULT_BUFLEN*2)
-#define DEFAULT_SIZE_HTTP_BODY (DEFAULT_BUFLEN)
+#define DEFAULT_SIZE_HTTP_BODY 512
+#define DEFAULT_SIZE_HTTP_BUF ((DEFAULT_SIZE_HTTP_BODY)*2)
+
 
 extern char response_body[DEFAULT_SIZE_HTTP_BODY];
+extern char HTTP_MODE[MAX_SZ_STR_CFG];
 
 void httpServerLoop(void* ptr);
 
