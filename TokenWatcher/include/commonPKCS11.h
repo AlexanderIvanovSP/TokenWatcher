@@ -23,11 +23,11 @@
 *  - rtPKCS11.h - для доступа к функциям PKCS#11                        *
 ************************************************************************/
 #ifdef _WIN32
-	#include <stdio.h>
-	#include <Windows.h>
-	#include <WinCrypt.h>
-	#include <process.h>
-	#include <time.h>
+#include <stdio.h>
+#include <Windows.h>
+#include <WinCrypt.h>
+#include <process.h>
+#include <time.h>
 #endif
 
 #include "wintypes.h"
@@ -41,27 +41,27 @@
 /* Имя библиотеки PKCS#11 */
 #ifdef _WIN32
 /* Библиотека для Рутокен S и Рутокен ЭЦП, поддерживает только алгоритмы RSA */
-	#define PKCS11_LIBRARY_NAME         "rtPKCS11.dll"
+#define PKCS11_LIBRARY_NAME         "rtPKCS11.dll"
 /* Библиотека только для Рутокен ЭЦП, поддерживает алгоритмы ГОСТ и RSA */
-	#define PKCS11ECP_LIBRARY_NAME      "rtPKCS11ECP.dll"
+#define PKCS11ECP_LIBRARY_NAME      "rtPKCS11ECP.dll"
 #endif
 #ifdef __unix__
 /* Библиотека только для Рутокен ЭЦП, поддерживает алгоритмы ГОСТ и RSA */
-	#define PKCS11_LIBRARY_NAME         "librtpkcs11ecp.so"
-	#define PKCS11ECP_LIBRARY_NAME      "librtpkcs11ecp.so"
+#define PKCS11_LIBRARY_NAME         "librtpkcs11ecp.so"
+#define PKCS11ECP_LIBRARY_NAME      "librtpkcs11ecp.so"
 #endif
 #ifdef __APPLE__
 /* Библиотека только для Рутокен ЭЦП, поддерживает алгоритмы ГОСТ и RSA */
-	#define PKCS11_LIBRARY_NAME         "librtpkcs11ecp.dylib"
-	#define PKCS11ECP_LIBRARY_NAME      "librtpkcs11ecp.dylib"
+#define PKCS11_LIBRARY_NAME         "librtpkcs11ecp.dylib"
+#define PKCS11ECP_LIBRARY_NAME      "librtpkcs11ecp.dylib"
 #endif
 
 #ifndef TOKEN_TYPE_RUTOKEN
-	#define TOKEN_TYPE_RUTOKEN 0x3
+#define TOKEN_TYPE_RUTOKEN 0x3
 #endif
 
 #ifdef _WIN32
-	#define HAVEMSCRYPTOAPI
+#define HAVEMSCRYPTOAPI
 #endif
 
 /* Вычисление размера массива */
@@ -167,7 +167,7 @@ static const char* rvToStr(CK_RV rv)
 	case CKR_RTPKCS11_RSF_DATA_CORRUPTED: return "CKR_RTPKCS11_RSF_DATA_CORRUPTED";
 	case CKR_SM_PASSWORD_INVALID: return "CKR_SM_PASSWORD_INVALID";
 	case CKR_LICENSE_READ_ONLY: return "CKR_LICENSE_READ_ONLY";
-	default: return "Unknown error";
+	default: return "CKR_UNKNOWN_ERR";
 	}
 }
 /*************************************************************************
@@ -232,7 +232,7 @@ static const char* rvToStr(CK_RV rv)
 * Функция вывода шестнадцатеричного буфера заданной длины                *
 *************************************************************************/
 static void printHex(const CK_BYTE* buffer,   // Буфер
-                     const CK_ULONG length)   // Длина буфера
+	const CK_ULONG length)   // Длина буфера
 {
 	unsigned int i;
 	const unsigned int width = 16;
@@ -253,15 +253,16 @@ static void printHex(const CK_BYTE* buffer,   // Буфер
 * Функция выборки 6 бит из массива байт                                  *
 *************************************************************************/
 static CK_BYTE GetNext6Bit(CK_BYTE_PTR csr,          // Указатель на начало массива
-                    CK_ULONG start,           // Номер бита в массиве, с которого начинается группа из 6 бит
-                    CK_ULONG end              // Номер последнего бита массива
-                    )
+	CK_ULONG start,           // Номер бита в массиве, с которого начинается группа из 6 бит
+	CK_ULONG end              // Номер последнего бита массива
+)
 {
 	CK_BYTE diff = start % 8;
 	csr += start / 8;
 	if (end - start > 8) {
 		return 0x3F & (*csr << diff | *(csr + 1) >> (8 - diff)) >> 2;
-	} else {
+	}
+	else {
 		return 0x3F & (*csr << diff >> 2);
 	}
 }
@@ -270,12 +271,13 @@ static CK_BYTE GetNext6Bit(CK_BYTE_PTR csr,          // Указатель на 
 * Функция конвертирования 6-битного кода в печатный символ Base64        *
 *************************************************************************/
 static char ConvertCodeToSymBase64(CK_BYTE code    // 6-битный код
-                            )
+)
 {
 	const char* alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	if (code < 0x40) {
 		return alphabet[(int)code];
-	} else {
+	}
+	else {
 		return '?';
 	}
 }
@@ -284,9 +286,9 @@ static char ConvertCodeToSymBase64(CK_BYTE code    // 6-битный код
 * Функция конвертирования массива байт в строку Base64                   *
 *************************************************************************/
 static void ConvertToBase64String(CK_BYTE_PTR data,         // Исходные данные
-                           CK_ULONG size,            // Длина исходного массива
-                           char** result             // Результирующие данные (нуль-терминированная строка)
-                           )
+	CK_ULONG size,            // Длина исходного массива
+	char** result             // Результирующие данные (нуль-терминированная строка)
+)
 {
 	CK_ULONG i = 0;
 	char* pt;
@@ -303,11 +305,11 @@ static void ConvertToBase64String(CK_BYTE_PTR data,         // Исходные 
 * Функция преобразования массива байт в PEM формат                       *
 *************************************************************************/
 static void GetBytesAsPem(CK_BYTE_PTR source,                  // Исходные данные
-	               CK_ULONG size,                       // Длина исходного массива
-	               const char* header,                  // Начальный тег
-	               const char* footer,                  // Конечный тег
-	               char** result                        // Результирующий запрос
-                   )
+	CK_ULONG size,                       // Длина исходного массива
+	const char* header,                  // Начальный тег
+	const char* footer,                  // Конечный тег
+	char** result                        // Результирующий запрос
+)
 {
 	size_t length;
 	size_t width = 0x40;
@@ -347,13 +349,13 @@ static void GetBytesAsPem(CK_BYTE_PTR source,                  // Исходны
 * Функция получения CSR в формате PEM                                    *
 *************************************************************************/
 static void GetCSRAsPEM(CK_BYTE_PTR source,                  // Исходные данные
-                  CK_ULONG size,                       // Длина исходного массива
-                  char** result                        // Результирующий запрос
-                  )
+	CK_ULONG size,                       // Длина исходного массива
+	char** result                        // Результирующий запрос
+)
 {
 	const char* begin = "-----BEGIN NEW CERTIFICATE REQUEST-----\n"; // Начало запроса
 	const char* end = "-----END NEW CERTIFICATE REQUEST-----\n";     // Конец запроса
-	
+
 	GetBytesAsPem(source, size, begin, end, result);
 }
 
@@ -361,22 +363,22 @@ static void GetCSRAsPEM(CK_BYTE_PTR source,                  // Исходные
 * Функция получения CMS в формате PEM                                    *
 *************************************************************************/
 static void GetCMSAsPEM(CK_BYTE_PTR source,                  // Исходные данные
-                  CK_ULONG size,                       // Длина исходного массива
-                  char** result                        // Результирующий запрос
-                  )
+	CK_ULONG size,                       // Длина исходного массива
+	char** result                        // Результирующий запрос
+)
 {
-        const char* begin = "-----BEGIN CMS-----\n"; // Начало cms
-        const char* end = "-----END CMS-----\n";     // Конец cms
+	const char* begin = "-----BEGIN CMS-----\n"; // Начало cms
+	const char* end = "-----END CMS-----\n";     // Конец cms
 
-        GetBytesAsPem(source, size, begin, end, result);
+	GetBytesAsPem(source, size, begin, end, result);
 }
 
 /*************************************************************************
 * Функция получения тела сертификата в формате PEM                       *
 *************************************************************************/
 static void GetCertAsPem(CK_BYTE_PTR source,    // Исходные данные
-	              CK_ULONG size,         // Длина исходного массива
-	              char** result          // Указатель на строку с результатом
+	CK_ULONG size,         // Длина исходного массива
+	char** result          // Указатель на строку с результатом
 )
 {
 	const char* begin = "-----BEGIN CERTIFICATE-----\n"; // Начало сертификата

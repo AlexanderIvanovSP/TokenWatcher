@@ -14,7 +14,7 @@
 extern char LOG_MODE[MAX_SZ_STR_CFG];
 extern char logPath[MAX_PATH];
 
-void logging(const char* funtionName, const char* status, const char* description);
+void logging(const char* functionName, const char* status, const char* description);
 
 void offLogMode();
 

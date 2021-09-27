@@ -74,7 +74,7 @@ int init_pkcs11(char* pkcsPath)
 
 	errorCode = 0;
 	pkcs11LibState = PKCS11_LOADED;
-	
+
 	/*************************************************************************
 	* Выгрузить библиотеку из памяти                                         *
 	*************************************************************************/
@@ -87,31 +87,31 @@ exit:
 
 int free_pkcs11()
 {
-        CK_RV rv = CKR_FUNCTION_REJECTED;
-        int errorCode = 1;
+	CK_RV rv = CKR_FUNCTION_REJECTED;
+	int errorCode = 1;
 
-		if (functionList) {
-			printf("\nFinalizing... \n");
-			__try {
-				rv = functionList->C_Finalize(NULL_PTR);
-			}
-			__finally {
-				CHECK_RELEASE_AND_LOG(" C_Finalize", rv == CKR_OK, rvToStr(rv), errorCode);
-			}
-			
+	if (functionList) {
+		printf("\nFinalizing... \n");
+		__try {
+			rv = functionList->C_Finalize(NULL_PTR);
+		}
+		__finally {
+			CHECK_RELEASE_AND_LOG(" C_Finalize", rv == CKR_OK, rvToStr(rv), errorCode);
 		}
 
-		CHECK_RELEASE(" FreeLibrary", FreeLibrary(module), errorCode);
-		pkcs11LibState = PKCS11_NOT_LOADED;
+	}
 
-        return errorCode;
+	CHECK_RELEASE(" FreeLibrary", FreeLibrary(module), errorCode);
+	pkcs11LibState = PKCS11_NOT_LOADED;
+
+	return errorCode;
 }
 
 int get_slot_list(CK_SLOT_ID_PTR* slots_ptr, CK_ULONG_PTR slotCount)
 {
 	CK_RV rv;
 	int errorCode = 1;
-	
+
 	/*************************************************************************
 	* Получить количество слотов c подключенными токенами                    *
 	*************************************************************************/
@@ -146,11 +146,11 @@ exit:
 }
 
 int findObjects(CK_SESSION_HANDLE session,         // Хэндл открытой сессии
-                CK_ATTRIBUTE_PTR attributes,       // Массив с шаблоном для поиска
-                CK_ULONG attrCount,                // Количество атрибутов в массиве поиска
-                CK_OBJECT_HANDLE objects[],        // Массив для записи найденных объектов
-                CK_ULONG* objectsCount             // Количество найденных объектов
-                       )
+	CK_ATTRIBUTE_PTR attributes,       // Массив с шаблоном для поиска
+	CK_ULONG attrCount,                // Количество атрибутов в массиве поиска
+	CK_OBJECT_HANDLE objects[],        // Массив для записи найденных объектов
+	CK_ULONG* objectsCount             // Количество найденных объектов
+)
 {
 	CK_RV rv;                                           // Код возврата. Могут быть возвращены только ошибки, определенные в PKCS#11
 	int errorCode = 1;                                  // Флаг ошибки
@@ -183,90 +183,90 @@ exit:
 
 int find_private_key(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE_PTR privateKey)
 {
-        CK_BYTE keyPairIdGost2012_256[] = { "GOST R 34.10-2012 (256 bits) sample key pair ID (Aktiv Co.)" };
-        CK_OBJECT_CLASS privateKeyObject = CKO_PRIVATE_KEY;
+	CK_BYTE keyPairIdGost2012_256[] = { "GOST R 34.10-2012 (256 bits) sample key pair ID (Aktiv Co.)" };
+	CK_OBJECT_CLASS privateKeyObject = CKO_PRIVATE_KEY;
 
-        CK_ATTRIBUTE privateKeyTemplate[] =
-        {
-                { CKA_CLASS, &privateKeyObject, sizeof(privateKeyObject)},              // Класс - закрытый ключ
-                { CKA_ID, &keyPairIdGost2012_256, sizeof(keyPairIdGost2012_256) - 1},   // Идентификатор ключевой пары (должен совпадать у открытого и закрытого ключей)
-        };
+	CK_ATTRIBUTE privateKeyTemplate[] =
+	{
+			{ CKA_CLASS, &privateKeyObject, sizeof(privateKeyObject)},              // Класс - закрытый ключ
+			{ CKA_ID, &keyPairIdGost2012_256, sizeof(keyPairIdGost2012_256) - 1},   // Идентификатор ключевой пары (должен совпадать у открытого и закрытого ключей)
+	};
 
-        CK_ULONG cnt = 1;
+	CK_ULONG cnt = 1;
 
-        CK_RV rv;
-        int errorCode = 1;
+	CK_RV rv;
+	int errorCode = 1;
 
-        rv = findObjects(session, privateKeyTemplate,
-        arraysize(privateKeyTemplate), privateKey, &cnt);
+	rv = findObjects(session, privateKeyTemplate,
+		arraysize(privateKeyTemplate), privateKey, &cnt);
 
-        CHECK(" findObjects", rv == 0, exit);
-        CHECK_AND_LOG(" Checking number of keys found", cnt == 1, "No objects found\n", exit);
+	CHECK(" findObjects", rv == 0, exit);
+	CHECK_AND_LOG(" Checking number of keys found", cnt == 1, "No objects found\n", exit);
 
-        errorCode = 0;
+	errorCode = 0;
 exit:
-        return errorCode;
+	return errorCode;
 }
 
 int find_public_key(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE_PTR publicKey)
 {
-        CK_BYTE keyPairIdGost2012_256[] = { "GOST R 34.10-2012 (256 bits) sample key pair ID (Aktiv Co.)" };
-        CK_OBJECT_CLASS publicKeyObject = CKO_PUBLIC_KEY;
+	CK_BYTE keyPairIdGost2012_256[] = { "GOST R 34.10-2012 (256 bits) sample key pair ID (Aktiv Co.)" };
+	CK_OBJECT_CLASS publicKeyObject = CKO_PUBLIC_KEY;
 
-        CK_ATTRIBUTE publicKeyTemplate[] =
-        {
-                { CKA_CLASS, &publicKeyObject, sizeof(publicKeyObject)},                // Класс - открытый ключ
-                { CKA_ID, &keyPairIdGost2012_256, sizeof(keyPairIdGost2012_256) - 1},   // Идентификатор ключевой пары (должен совпадать у открытого и закрытого ключей)
-        };
+	CK_ATTRIBUTE publicKeyTemplate[] =
+	{
+			{ CKA_CLASS, &publicKeyObject, sizeof(publicKeyObject)},                // Класс - открытый ключ
+			{ CKA_ID, &keyPairIdGost2012_256, sizeof(keyPairIdGost2012_256) - 1},   // Идентификатор ключевой пары (должен совпадать у открытого и закрытого ключей)
+	};
 
-        CK_ULONG cnt = 1;
+	CK_ULONG cnt = 1;
 
-        CK_RV rv;
-        int errorCode = 1;
+	CK_RV rv;
+	int errorCode = 1;
 
-        rv = findObjects(session, publicKeyTemplate,
-        arraysize(publicKeyTemplate), publicKey, &cnt);
+	rv = findObjects(session, publicKeyTemplate,
+		arraysize(publicKeyTemplate), publicKey, &cnt);
 
-        CHECK(" findObjects", rv == 0, exit);
-        CHECK_AND_LOG(" Checking number of keys found", cnt == 1, "No objects found\n", exit);
+	CHECK(" findObjects", rv == 0, exit);
+	CHECK_AND_LOG(" Checking number of keys found", cnt == 1, "No objects found\n", exit);
 
-        errorCode = 0;
+	errorCode = 0;
 exit:
-        return errorCode;
+	return errorCode;
 }
 
 int find_certificate(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE_PTR certificate)
 {
-        CK_BYTE keyPairIdGost2012_256[] = { "GOST R 34.10-2012 (256 bits) sample key pair ID (Aktiv Co.)" };
-        CK_OBJECT_CLASS certificateObject = CKO_CERTIFICATE;
+	CK_BYTE keyPairIdGost2012_256[] = { "GOST R 34.10-2012 (256 bits) sample key pair ID (Aktiv Co.)" };
+	CK_OBJECT_CLASS certificateObject = CKO_CERTIFICATE;
 
-        CK_ATTRIBUTE certificateTemplate[] =
-        {
-                { CKA_CLASS, &certificateObject, sizeof(certificateObject)},            // Класс - закрытый ключ
-                { CKA_ID, &keyPairIdGost2012_256, sizeof(keyPairIdGost2012_256) - 1},   // Идентификатор ключевой пары (должен совпадать у открытого и закрытого ключей)
-        };
+	CK_ATTRIBUTE certificateTemplate[] =
+	{
+			{ CKA_CLASS, &certificateObject, sizeof(certificateObject)},            // Класс - закрытый ключ
+			{ CKA_ID, &keyPairIdGost2012_256, sizeof(keyPairIdGost2012_256) - 1},   // Идентификатор ключевой пары (должен совпадать у открытого и закрытого ключей)
+	};
 
-        CK_ULONG cnt = 1;
+	CK_ULONG cnt = 1;
 
-        CK_RV rv;
-        int errorCode = 1;
+	CK_RV rv;
+	int errorCode = 1;
 
-        rv = findObjects(session, certificateTemplate,
-        arraysize(certificateTemplate), certificate, &cnt);
+	rv = findObjects(session, certificateTemplate,
+		arraysize(certificateTemplate), certificate, &cnt);
 
-        CHECK(" findObjects", rv == 0, exit);
-        CHECK_AND_LOG(" Checking number of certificate found", cnt == 1, "No objects found\n", exit);
+	CHECK(" findObjects", rv == 0, exit);
+	CHECK_AND_LOG(" Checking number of certificate found", cnt == 1, "No objects found\n", exit);
 
-        errorCode = 0;
+	errorCode = 0;
 exit:
-        return errorCode;
+	return errorCode;
 }
 
 int mech_supports(CK_SLOT_ID slot, CK_MECHANISM_TYPE mech, int* mechIsSupported)
 {
 	CK_MECHANISM_TYPE_PTR mechanisms;                 // Массив поддерживаемых механизмов
 	CK_ULONG mechanismCount;                          // Количество поддерживаемых механизмов
-	
+
 	CK_RV rv;
 	int errorCode = 1;
 
