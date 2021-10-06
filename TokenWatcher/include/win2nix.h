@@ -19,7 +19,7 @@
 
 #ifdef _WIN32
 
-static void createThread(uintptr_t* thread, unsigned int size, void (* funct)(void*), void* arg)
+static void createThread(uintptr_t* thread, unsigned int size, void (*funct)(void*), void* arg)
 {
 	*thread = _beginthread(funct, size, arg);
 }

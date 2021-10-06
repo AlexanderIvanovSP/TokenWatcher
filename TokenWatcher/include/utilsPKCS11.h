@@ -26,7 +26,7 @@ int get_slot_list(CK_SLOT_ID_PTR* slots_ptr, CK_ULONG_PTR slotCount);
 
 /* Функция для удобного поиска объектов на токене */
 int findObjects(CK_SESSION_HANDLE session, CK_ATTRIBUTE_PTR attributes, CK_ULONG attrCount,
-                CK_OBJECT_HANDLE objects[], CK_ULONG* objectsCount);
+	CK_OBJECT_HANDLE objects[], CK_ULONG* objectsCount);
 
 /* Функция для получения закрытого ГОСТ ключа на токене */
 int find_private_key(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE_PTR privateKey);

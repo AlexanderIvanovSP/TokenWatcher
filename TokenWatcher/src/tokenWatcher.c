@@ -1,7 +1,7 @@
 ﻿
 #include "tokenWatcher.h"
 
-#define PKCS11_NOT_INITIALIZED	"PKCS11_NOT_INITIALIZED"
+#define CKR_ERR_LOAD_LIBRARY	"CKR_ERR_LOAD_LIBRARY"
 
 
 #define DEFAULT_HTTP_HEADER "HTTP/1.1 200 OK\r\nVersion: HTTP/1.1\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
@@ -42,7 +42,7 @@ int sendDataTo1C(char* buf, int size)
 	iResult = getaddrinfo((PCSTR)ip, (PCSTR)port, &hints, &result);
 	if (iResult != 0) {
 		logging(__FUNCTION__, "ERROR", "CFG getaddrinfo failed. Set DEFAULT_ADDR and DEFAULT_PORT");
-		sprintf_s(ip, MAX_SZ_STR_CFG,"%s", DEFAULT_ADDR);
+		sprintf_s(ip, MAX_SZ_STR_CFG, "%s", DEFAULT_ADDR);
 		sprintf_s(port, MAX_SZ_STR_CFG, "%s", DEFAULT_PORT);
 		iResult = getaddrinfo((PCSTR)ip, (PCSTR)port, &hints, &result);
 		if (iResult != 0) {
@@ -82,7 +82,7 @@ int sendDataTo1C(char* buf, int size)
 
 	switch (getOsiLevel())
 	{
-	case 7: 
+	case 7:
 		sprintf_s(sendPostBuf, sendPostBufLen, "POST / HTTP/1.1\r\nHost: %s:%s\r\nContent-Type : application/json\r\nContent-Length : %d\r\n\r\n%.*s", ip, port, size, size, buf);
 		break;
 	case 4:
@@ -90,7 +90,7 @@ int sendDataTo1C(char* buf, int size)
 		sprintf_s(sendPostBuf, sendPostBufLen, "%.*s", size, buf);
 		break;
 	}
-	
+
 	iResult = send(ConnectSocket, sendPostBuf, (int)strnlen_s(sendPostBuf, sendPostBufLen), 0);
 	if (iResult == SOCKET_ERROR) {
 		logging(__FUNCTION__, "ERROR", "send failed");
@@ -127,7 +127,7 @@ static void getTokenInfo(void* slot_ptr)
 
 	if (rv != CKR_OK)
 		goto free_slot;
-	
+
 	exTokenInfo.ulSizeofThisStructure = sizeof(CK_TOKEN_INFO_EXTENDED);
 	rv = functionListEx->C_EX_GetTokenInfoExtended(slot, &exTokenInfo);
 	logging("C_EX_GetTokenInfoExtended", rvToStr(rv), "");
@@ -281,7 +281,7 @@ int loadGeneralLoop(void* ptr)
 		getDateISO8601(timebuf);
 		sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", rvToStr(CKR_TOKEN_NOT_PRESENT), timebuf);
 	}
-	
+
 	while (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
 
 		if (init_pkcs11(pkcsDllPath))
@@ -297,8 +297,8 @@ int loadGeneralLoop(void* ptr)
 
 exit:
 	if (errorCode) {
-		logging(__FUNCTION__, "ERROR", PKCS11_NOT_INITIALIZED);
-		sendReport(PKCS11_NOT_INITIALIZED);
+		logging(__FUNCTION__, "ERROR", CKR_ERR_LOAD_LIBRARY);
+		sendReport(CKR_ERR_LOAD_LIBRARY);
 	}
 	else
 		logging(__FUNCTION__, "OK", "END_LOOP");

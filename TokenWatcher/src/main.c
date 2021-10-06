@@ -9,9 +9,10 @@
 
 #define SERVICE_NAME "TokenWatcher"
 
-#define SERVICE_DISPATCHER_ERR	"SERVICE_DISPATCHER_ERR"
-#define SERVICE_HANDLER_ERR		"SERVICE_HANDLER_ERR"
-#define SERVICE_SET_STATUS_ERR	"SERVICE_SET_STATUS_ERR"
+#define SERVICE_ERR_DISPATCHER	"SERVICE_ERR_DISPATCHER"
+#define SERVICE_ERR_REG_HANDLER		"SERVICE_ERR_REG_HANDLER"
+#define SERVICE_ERR_SET_STATUS	"SERVICE_ERR_SET_STATUS"
+#define SERVICE_WARNING_STOPPED "SERVICE_WARNING_STOPPED"
 
 SERVICE_STATUS ServiceStatus;
 SERVICE_STATUS_HANDLE ServiceStatusHandle;
@@ -28,11 +29,11 @@ void WINAPI ServiceCtrlHandler(DWORD opcode);
 int main() {
 
 	SERVICE_TABLE_ENTRY DispatchTable[] = { {SERVICE_NAME, ServiceMain}, {NULL, NULL} };
-	
+
 #if _DEBUG
 	Sleep(10000);
 #endif
-	
+
 	GetModuleFileName(GetModuleHandle(NULL), mainPath, MAX_PATH);
 	*strrchr(mainPath, '\\') = '\0';
 	strcat_s(mainPath, MAX_PATH, "\\");
@@ -42,8 +43,8 @@ int main() {
 
 	strcpy_s(logPath, MAX_PATH, mainPath);
 	strcat_s(logPath, MAX_PATH, LOG_FILE_NAME);
-	
-	
+
+
 
 	logMutex = CreateMutex(NULL, FALSE, NULL);
 	if (logMutex == NULL)
@@ -53,8 +54,8 @@ int main() {
 
 	if (!StartServiceCtrlDispatcher(DispatchTable))
 	{
-		logging("StartServiceCtrlDispatcher", "ERROR", SERVICE_DISPATCHER_ERR);
-		sendReport(SERVICE_DISPATCHER_ERR);
+		logging("StartServiceCtrlDispatcher", "ERROR", SERVICE_ERR_DISPATCHER);
+		sendReport(SERVICE_ERR_DISPATCHER);
 	}
 	else
 		logging("StartServiceCtrlDispatcher", "OK", "");
@@ -86,47 +87,47 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 	ServiceStatusHandle = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceCtrlHandler);
 
 	if (ServiceStatusHandle == (SERVICE_STATUS_HANDLE)0) {
-		logging(__FUNCTION__, "ERROR", SERVICE_HANDLER_ERR);
-		sendReport(SERVICE_HANDLER_ERR);
+		logging(__FUNCTION__, "ERROR", SERVICE_ERR_REG_HANDLER);
+		sendReport(SERVICE_ERR_REG_HANDLER);
 		return;
 	}
 	else
 		logging(__FUNCTION__, "OK", "");
-	
+
 	ServiceStatus.dwCurrentState = SERVICE_RUNNING;
 	ServiceStatus.dwCheckPoint = 0;
 	ServiceStatus.dwWaitHint = 0;
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
-		logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-		sendReport(SERVICE_SET_STATUS_ERR);
+		logging("SetServiceStatus", "ERROR", SERVICE_ERR_SET_STATUS);
+		sendReport(SERVICE_ERR_SET_STATUS);
 	}
 	else
 		logging("SetServiceStatus", "OK", "");
 
 	createThread(&threadHttpServer, NULL_PTR, &httpServerLoop, NULL_PTR);
-	
+
 	while (ServiceStatus.dwCurrentState != SERVICE_STOPPED) {
 		if (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
 			createThread(&threadTokenWatcher, NULL_PTR, &loadGeneralLoop, NULL_PTR);
 			WaitForSingleObject((HANDLE)threadTokenWatcher, INFINITE);
 		}
 	}
-	
+
 	return;
 }
 
 const char* CurrentStateToStr(DWORD status)
 {
 	switch (status) {
-	case SERVICE_STOPPED:return "SERVICE_STOPPED";
-	case SERVICE_START_PENDING:return "SERVICE_START_PENDING";
-	case SERVICE_STOP_PENDING:return "SERVICE_STOP_PENDING";
-	case SERVICE_RUNNING:return "SERVICE_RUNNING";
-	case SERVICE_CONTINUE_PENDING:return "SERVICE_CONTINUE_PENDING";
-	case SERVICE_PAUSE_PENDING:return "SERVICE_PAUSE_PENDING";
-	case SERVICE_PAUSED:return "SERVICE_PAUSED";
-	default: return "SERVICE_UNKNOWN";
+	case SERVICE_STOPPED:return "SERVICE_STATE_STOPPED";
+	case SERVICE_START_PENDING:return "SERVICE_STATE_START_PENDING";
+	case SERVICE_STOP_PENDING:return "SERVICE_STATE_STOP_PENDING";
+	case SERVICE_RUNNING:return "SERVICE_STATE_RUNNING";
+	case SERVICE_CONTINUE_PENDING:return "SERVICE_STATE_CONTINUE_PENDING";
+	case SERVICE_PAUSE_PENDING:return "SERVICE_STATE_PAUSE_PENDING";
+	case SERVICE_PAUSED:return "SERVICE_STATE_PAUSED";
+	default: return "SERVICE_STATE_UNKNOWN";
 	}
 }
 
@@ -153,12 +154,12 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 		ServiceStatus.dwWaitHint = 0;
 
 		logging(__FUNCTION__, "OK", CurrentStateToStr(SERVICE_STOPPED));
-		sendReport(CurrentStateToStr(SERVICE_STOPPED));
+		sendReport(SERVICE_WARNING_STOPPED);
 		free_pkcs11();
 
 		if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
-			logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-			sendReport(SERVICE_SET_STATUS_ERR);
+			logging("SetServiceStatus", "ERROR", SERVICE_ERR_SET_STATUS);
+			sendReport(SERVICE_ERR_SET_STATUS);
 		}
 
 		return;
@@ -166,18 +167,18 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 	case SERVICE_CONTROL_INTERROGATE:
 		getDateISO8601(timebuf);
 		logging(__FUNCTION__, "OK", CurrentStateToStr(ServiceStatus.dwCurrentState));
-		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"INTERROGATE\", \"Service\": \"%s\", \"PKCS11\": \"%d\", \"TimeStamp\": \"%s\"}", CurrentStateToStr(ServiceStatus.dwCurrentState), pkcs11LibState, timebuf);
+		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"INTERROGATE\", \"ServiceStatus\": \"%s\", \"PKCS11\": \"%d\", \"TimeStamp\": \"%s\"}", CurrentStateToStr(ServiceStatus.dwCurrentState), pkcs11LibState, timebuf);
 		sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 		break;
 
 	default:
 		logging(__FUNCTION__, "UNRECOGNIZED_OPCODE", CurrentStateToStr(ServiceStatus.dwCurrentState));
-	
+
 	}
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
-		logging("SetServiceStatus", "ERROR", SERVICE_SET_STATUS_ERR);
-		sendReport(SERVICE_SET_STATUS_ERR);
+		logging("SetServiceStatus", "ERROR", SERVICE_ERR_SET_STATUS);
+		sendReport(SERVICE_ERR_SET_STATUS);
 		return;
 	}
 	else
