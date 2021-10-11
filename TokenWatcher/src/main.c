@@ -9,6 +9,7 @@
 
 #define SERVICE_NAME "TokenWatcher"
 
+#define SERVICE_ERR_FLAG "ERR_SERVICE"
 #define SERVICE_ERR_DISPATCHER	"SERVICE_ERR_DISPATCHER"
 #define SERVICE_ERR_REG_HANDLER		"SERVICE_ERR_REG_HANDLER"
 #define SERVICE_ERR_SET_STATUS	"SERVICE_ERR_SET_STATUS"
@@ -55,7 +56,7 @@ int main() {
 	if (!StartServiceCtrlDispatcher(DispatchTable))
 	{
 		logging("StartServiceCtrlDispatcher", "ERROR", SERVICE_ERR_DISPATCHER);
-		sendReport(SERVICE_ERR_DISPATCHER);
+		sendReport(SERVICE_ERR_FLAG, SERVICE_ERR_DISPATCHER);
 	}
 	else
 		logging("StartServiceCtrlDispatcher", "OK", "");
@@ -88,7 +89,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	if (ServiceStatusHandle == (SERVICE_STATUS_HANDLE)0) {
 		logging(__FUNCTION__, "ERROR", SERVICE_ERR_REG_HANDLER);
-		sendReport(SERVICE_ERR_REG_HANDLER);
+		sendReport(SERVICE_ERR_FLAG, SERVICE_ERR_REG_HANDLER);
 		return;
 	}
 	else
@@ -100,7 +101,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 		logging("SetServiceStatus", "ERROR", SERVICE_ERR_SET_STATUS);
-		sendReport(SERVICE_ERR_SET_STATUS);
+		sendReport(SERVICE_ERR_FLAG, SERVICE_ERR_SET_STATUS);
 	}
 	else
 		logging("SetServiceStatus", "OK", "");
@@ -124,9 +125,11 @@ const char* CurrentStateToStr(DWORD status)
 	case SERVICE_START_PENDING:return "SERVICE_STATE_START_PENDING";
 	case SERVICE_STOP_PENDING:return "SERVICE_STATE_STOP_PENDING";
 	case SERVICE_RUNNING:return "SERVICE_STATE_RUNNING";
+#if _DEBUG
 	case SERVICE_CONTINUE_PENDING:return "SERVICE_STATE_CONTINUE_PENDING";
 	case SERVICE_PAUSE_PENDING:return "SERVICE_STATE_PAUSE_PENDING";
 	case SERVICE_PAUSED:return "SERVICE_STATE_PAUSED";
+#endif
 	default: return "SERVICE_STATE_UNKNOWN";
 	}
 }
@@ -154,12 +157,12 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 		ServiceStatus.dwWaitHint = 0;
 
 		logging(__FUNCTION__, "OK", CurrentStateToStr(SERVICE_STOPPED));
-		sendReport(SERVICE_WARNING_STOPPED);
+		sendReport(SERVICE_ERR_FLAG, SERVICE_WARNING_STOPPED);
 		free_pkcs11();
 
 		if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 			logging("SetServiceStatus", "ERROR", SERVICE_ERR_SET_STATUS);
-			sendReport(SERVICE_ERR_SET_STATUS);
+			sendReport(SERVICE_ERR_FLAG, SERVICE_ERR_SET_STATUS);
 		}
 
 		return;
@@ -178,7 +181,7 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
 	if (!SetServiceStatus(ServiceStatusHandle, &ServiceStatus)) {
 		logging("SetServiceStatus", "ERROR", SERVICE_ERR_SET_STATUS);
-		sendReport(SERVICE_ERR_SET_STATUS);
+		sendReport(SERVICE_ERR_FLAG, SERVICE_ERR_SET_STATUS);
 		return;
 	}
 	else

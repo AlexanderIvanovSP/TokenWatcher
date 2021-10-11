@@ -20,7 +20,7 @@
 
 #define DEFAULT_BUFLEN 512
 
-int sendReport(const char* err);
+int sendReport(const char* err, const char* description);
 
 int sendDataTo1C(char* buf, int size);
 

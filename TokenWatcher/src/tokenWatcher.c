@@ -1,6 +1,8 @@
 ﻿
 #include "tokenWatcher.h"
 
+#define PKCS11_ERR_FLAG "ERR_PKCS11"
+#define TOKEN_ERR_FLAG "ERR_READ_TOKEN"
 #define CKR_ERR_LOAD_LIBRARY	"CKR_ERR_LOAD_LIBRARY"
 
 
@@ -152,7 +154,7 @@ static void getTokenInfo(void* slot_ptr)
 \"DD\" : %d\
 }\
 }",
-rvToStr(rv),
+"OK",
 timebuf,
 exTokenInfo.ulTokenType,
 (int)sizeof(tokenInfo.model), tokenInfo.model,
@@ -174,7 +176,7 @@ tokenInfo.firmwareVersion.minor
 	return;
 
 free_slot:
-	sendReport(rvToStr(rv));
+	sendReport(TOKEN_ERR_FLAG, rvToStr(rv));
 	free(slot_ptr);
 	return;
 }
@@ -218,7 +220,7 @@ static void monitorSlotEvent(void* ptr)
 	}
 
 	if (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
-		sendReport(rvToStr(rv));
+		sendReport(PKCS11_ERR_FLAG, rvToStr(rv));
 	}
 
 	_endthread();
@@ -250,7 +252,7 @@ static void convertPkcs11DllModeToPath(UINT mode, char* out)
 	return;
 }
 
-int sendReport(const char* err)
+int sendReport(const char* err, const char* description)
 {
 	char REPORT_MODE[MAX_SZ_STR_CFG] = { 0 };
 	char buf[DEFAULT_BUFLEN] = { 0 };
@@ -261,7 +263,7 @@ int sendReport(const char* err)
 		return 0;
 
 	getDateISO8601(timebuf);
-	sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", err, timebuf);
+	sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\", \"Description\": \"%s\"}", err, timebuf, description);
 
 	return sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 }
@@ -298,7 +300,7 @@ int loadGeneralLoop(void* ptr)
 exit:
 	if (errorCode) {
 		logging(__FUNCTION__, "ERROR", CKR_ERR_LOAD_LIBRARY);
-		sendReport(CKR_ERR_LOAD_LIBRARY);
+		sendReport(PKCS11_ERR_FLAG, CKR_ERR_LOAD_LIBRARY);
 	}
 	else
 		logging(__FUNCTION__, "OK", "END_LOOP");
