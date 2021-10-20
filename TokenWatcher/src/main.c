@@ -19,6 +19,7 @@ SERVICE_STATUS ServiceStatus;
 SERVICE_STATUS_HANDLE ServiceStatusHandle;
 
 HANDLE logMutex;
+HANDLE logShortMutex;
 uintptr_t threadTokenWatcher;
 uintptr_t threadHttpServer;
 char mainPath[MAX_PATH] = { 0 };
@@ -45,7 +46,17 @@ int main() {
 	strcpy_s(logPath, MAX_PATH, mainPath);
 	strcat_s(logPath, MAX_PATH, LOG_FILE_NAME);
 
+	strcpy_s(logShortPath, MAX_PATH, mainPath);
+	strcat_s(logShortPath, MAX_PATH, SHORT_LOG_FILE_NAME);
 
+	logShortMutex = CreateMutex(NULL, FALSE, NULL);
+	if (logShortMutex == NULL)
+		offShortLogMode();
+	else
+	{
+		getShortLogMode(SHORT_LOG_MODE);
+		getShortLogMode_T(SHORT_LOG_T);
+	}
 
 	logMutex = CreateMutex(NULL, FALSE, NULL);
 	if (logMutex == NULL)

@@ -11,11 +11,16 @@
 #define CFG_KEY_PKCS11_MODE "PKCS11_MODE"
 #define CFG_KEY_LOG "LOG"
 #define CFG_KEY_REPORT "REPORT"
+#define CFG_KEY_SHORT_LOG "SHORT_LOG"
+#define CFG_KEY_SHORT_LOG_T "SHORT_LOG_T"
 
+
+#define DEFAULT_SHORT_LOG_T "d"
+#define DEFAULT_SHORT_LOG "no"
 #define DEFAULT_LOG_MODE "no"
 #define DEFAULT_PKCS11_MODE 0
 #define DEFAULT_REPORT_MODE "no"
-#define DEFAULT_OSI_LEVEL 7
+#define DEFAULT_OSI_LEVEL 4
 #define DEFAULT_HTTP_MODE "no"
 
 char cfgPath[MAX_PATH];
@@ -30,6 +35,22 @@ static DWORD readConfigIni(char* section, char* key, char* out) {
 		MAX_SZ_STR_CFG,
 		cfgPath
 	);
+}
+
+void getShortLogMode_T(char* out) {
+
+	if (!readConfigIni(CFG_SECTION_DEBUG, CFG_KEY_SHORT_LOG_T, out))
+		strcpy_s(out, MAX_SZ_STR_CFG, DEFAULT_SHORT_LOG_T);
+
+	return;
+}
+
+void getShortLogMode(char* out) {
+
+	if (!readConfigIni(CFG_SECTION_DEBUG, CFG_KEY_SHORT_LOG, out))
+		strcpy_s(out, MAX_SZ_STR_CFG, DEFAULT_SHORT_LOG);
+
+	return;
 }
 
 void getIP(char* out) {

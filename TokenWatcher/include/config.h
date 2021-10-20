@@ -32,4 +32,8 @@ UINT getPkcs11DllMode();
 
 UINT getOsiLevel();
 
+void getShortLogMode_T(char* out);
+
+void getShortLogMode(char* out);
+
 #endif

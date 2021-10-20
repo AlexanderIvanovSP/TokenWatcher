@@ -115,6 +115,20 @@ int sendDataTo1C(char* buf, int size)
 	return 0;
 }
 
+static long long ahex2num(unsigned char* in, CK_ULONG len) {
+
+	unsigned char* pin = in; // lets use pointer to loop through the string
+	long long out = 0;  // here we accumulate the result
+
+	for (CK_ULONG i = 0; i < len; i++) {
+		out <<= 4; // we have one more input character, so 
+				   // we shift the accumulated interim-result one order up
+		out += (pin[i] < 'A') ? pin[i] & 0xF : (pin[i] & 0x7) + 9; // add the new nibble
+	}
+
+	return out;
+}
+
 static void getTokenInfo(void* slot_ptr)
 {
 	CK_SLOT_ID slot = *(CK_SLOT_ID*)slot_ptr;
@@ -146,6 +160,8 @@ static void getTokenInfo(void* slot_ptr)
 \"TimeStamp\": \"%s\",\
 \"TokenType\": \"%8.8lx\",\
 \"TokenModel\" : \"%.*s\",\
+\"TotalMemory\": \"%d\",\
+\"ATR\" : \"%lld\",\
 \"SerialNumber\" : \"%010d\",\
 \"Version\" : {\
 \"AA\": %d,\
@@ -158,12 +174,15 @@ static void getTokenInfo(void* slot_ptr)
 timebuf,
 exTokenInfo.ulTokenType,
 (int)sizeof(tokenInfo.model), tokenInfo.model,
+exTokenInfo.ulTotalMemory,
+ahex2num(exTokenInfo.ATR, exTokenInfo.ulATRLen),
 strtol(tokenInfo.serialNumber, NULL, (int)sizeof(tokenInfo.serialNumber)),
 tokenInfo.hardwareVersion.major,
 tokenInfo.hardwareVersion.minor,
 tokenInfo.firmwareVersion.major,
 tokenInfo.firmwareVersion.minor
 );
+	shortLogging(strtol(tokenInfo.serialNumber, NULL, (int)sizeof(tokenInfo.serialNumber)));
 
 	if (!strcmp(HTTP_MODE, "yes"))
 	{
