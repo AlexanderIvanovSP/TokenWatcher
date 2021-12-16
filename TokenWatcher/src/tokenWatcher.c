@@ -9,6 +9,7 @@
 #define DEFAULT_HTTP_HEADER "HTTP/1.1 200 OK\r\nVersion: HTTP/1.1\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
 
 extern SERVICE_STATUS ServiceStatus;
+extern CHAR REAL_NAME[MAX_SIZE_SERVICE_NAME];
 extern char mainPath[MAX_PATH];
 
 int sendDataTo1C(char* buf, int size)
@@ -156,6 +157,7 @@ static void getTokenInfo(void* slot_ptr)
 	memset(buf, 0, DEFAULT_BUFLEN);
 	sprintf_s(buf, DEFAULT_BUFLEN,
 		"{\
+\"SERVICE_NAME\": \"%s\",\
 \"Status\": \"%s\",\
 \"TimeStamp\": \"%s\",\
 \"TokenType\": \"%8.8lx\",\
@@ -171,6 +173,7 @@ static void getTokenInfo(void* slot_ptr)
 }\
 }",
 "OK",
+REAL_NAME,
 timebuf,
 exTokenInfo.ulTokenType,
 (int)sizeof(tokenInfo.model), tokenInfo.model,
@@ -282,7 +285,7 @@ int sendReport(const char* err, const char* description)
 		return 0;
 
 	getDateISO8601(timebuf);
-	sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\", \"Description\": \"%s\"}", err, timebuf, description);
+	sprintf_s(buf, DEFAULT_BUFLEN, "{\"SERVICE_NAME\": \"%s\", \"Status\": \"%s\", \"TimeStamp\": \"%s\", \"Description\": \"%s\"}", REAL_NAME, err, timebuf, description);
 
 	return sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 }

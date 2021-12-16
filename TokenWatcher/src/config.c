@@ -10,11 +10,12 @@
 #define CFG_SECTION_DEBUG "DEBUG"
 #define CFG_KEY_PKCS11_MODE "PKCS11_MODE"
 #define CFG_KEY_LOG "LOG"
+#define CFG_KEY_LOG_T "LOG_T"
 #define CFG_KEY_REPORT "REPORT"
 #define CFG_KEY_SHORT_LOG "SHORT_LOG"
 #define CFG_KEY_SHORT_LOG_T "SHORT_LOG_T"
 
-
+#define DEFAULT_LOG_T "d"
 #define DEFAULT_SHORT_LOG_T "d"
 #define DEFAULT_SHORT_LOG "no"
 #define DEFAULT_LOG_MODE "no"
@@ -35,6 +36,13 @@ static DWORD readConfigIni(char* section, char* key, char* out) {
 		MAX_SZ_STR_CFG,
 		cfgPath
 	);
+}
+
+void getLogMode_T(char* out) {
+	if (!readConfigIni(CFG_SECTION_DEBUG, CFG_KEY_LOG_T, out))
+		strcpy_s(out, MAX_SZ_STR_CFG, DEFAULT_LOG_T);
+
+	return;
 }
 
 void getShortLogMode_T(char* out) {

@@ -17,6 +17,7 @@
 
 SERVICE_STATUS ServiceStatus;
 SERVICE_STATUS_HANDLE ServiceStatusHandle;
+CHAR REAL_NAME[MAX_SIZE_SERVICE_NAME] = { 0 };
 
 HANDLE logMutex;
 HANDLE logShortMutex;
@@ -27,6 +28,7 @@ char mainPath[MAX_PATH] = { 0 };
 const char* CurrentStateToStr(DWORD status);
 void WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 void WINAPI ServiceCtrlHandler(DWORD opcode);
+void getCurrentNameService(DWORD processId);
 
 int main() {
 
@@ -62,7 +64,10 @@ int main() {
 	if (logMutex == NULL)
 		offLogMode();
 	else
+	{
 		getLogMode(LOG_MODE);
+		getLogMode_T(LOG_T);
+	}
 
 	if (!StartServiceCtrlDispatcher(DispatchTable))
 	{
@@ -75,6 +80,8 @@ int main() {
 
 	if (logMutex)
 		CloseHandle(logMutex);
+	if (logShortMutex)
+		CloseHandle(logShortMutex);
 
 	return 0;
 }
@@ -116,7 +123,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 	}
 	else
 		logging("SetServiceStatus", "OK", "");
-
+	getCurrentNameService(GetCurrentProcessId());
 	createThread(&threadHttpServer, NULL_PTR, &httpServerLoop, NULL_PTR);
 
 	while (ServiceStatus.dwCurrentState != SERVICE_STOPPED) {
@@ -181,7 +188,7 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 	case SERVICE_CONTROL_INTERROGATE:
 		getDateISO8601(timebuf);
 		logging(__FUNCTION__, "OK", CurrentStateToStr(ServiceStatus.dwCurrentState));
-		sprintf_s(buf, DEFAULT_BUFLEN, "{\"Status\": \"INTERROGATE\", \"ServiceStatus\": \"%s\", \"PKCS11\": \"%d\", \"TimeStamp\": \"%s\"}", CurrentStateToStr(ServiceStatus.dwCurrentState), pkcs11LibState, timebuf);
+		sprintf_s(buf, DEFAULT_BUFLEN, "{\"SERVICE_NAME\": \"%s\", \"Status\": \"INTERROGATE\", \"ServiceStatus\": \"%s\", \"PKCS11\": \"%d\", \"TimeStamp\": \"%s\"}", REAL_NAME, CurrentStateToStr(ServiceStatus.dwCurrentState), pkcs11LibState, timebuf);
 		sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 		break;
 
@@ -198,5 +205,63 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 	else
 		logging("SetServiceStatus", "OK", CurrentStateToStr(ServiceStatus.dwCurrentState));
 
+	return;
+}
+
+void getCurrentNameService(DWORD processId)
+{
+	SC_HANDLE hSCM = OpenSCManager(NULL, NULL,
+		SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_CONNECT);
+
+
+	if (hSCM == NULL)
+	{
+		return;
+	}
+	DWORD bufferSize = 0;
+	DWORD requiredBufferSize = 0;
+	DWORD totalServicesCount = 0;
+	UCHAR* buffer;
+	BOOL result = 0;
+	LPENUM_SERVICE_STATUS_PROCESS services;
+	unsigned int i = 0;
+
+	(void)EnumServicesStatusEx(hSCM,
+		SC_ENUM_PROCESS_INFO,
+		SERVICE_WIN32,
+		SERVICE_STATE_ALL,
+		NULL_PTR,
+		bufferSize,
+		&requiredBufferSize,
+		&totalServicesCount,
+		NULL_PTR,
+		NULL_PTR);
+
+	buffer = malloc(sizeof(UCHAR) * requiredBufferSize);
+	(void)EnumServicesStatusEx(hSCM,
+		SC_ENUM_PROCESS_INFO,
+		SERVICE_WIN32,
+		SERVICE_STATE_ALL,
+		buffer,
+		requiredBufferSize,
+		&requiredBufferSize,
+		&totalServicesCount,
+		NULL_PTR,
+		NULL_PTR);
+
+	services = (LPENUM_SERVICE_STATUS_PROCESS)buffer;
+	for (i = 0; i < totalServicesCount; ++i)
+	{
+		ENUM_SERVICE_STATUS_PROCESS service = services[i];
+		if (service.ServiceStatusProcess.dwProcessId == processId)
+		{
+			sprintf_s(REAL_NAME, MAX_SIZE_SERVICE_NAME, "%s", service.lpDisplayName);
+			free(buffer);
+			(void)CloseServiceHandle(hSCM);
+			return;
+		}
+	}
+	free(buffer);
+	(void)CloseServiceHandle(hSCM);
 	return;
 }

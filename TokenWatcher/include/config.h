@@ -20,6 +20,8 @@ void getIP(char* out);
 
 void getPORT(char* out);
 
+void getLogMode_T(char* out);
+
 void getLogMode(char* out);
 
 void getReportMode(char* out);

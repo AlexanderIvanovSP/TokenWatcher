@@ -1,6 +1,7 @@
 #include "logging.h"
 
 char LOG_MODE[MAX_SZ_STR_CFG] = { 0 };
+char LOG_T[MAX_SZ_STR_CFG] = { 0 };
 char logPath[MAX_PATH] = { 0 };
 extern HANDLE logMutex;
 
@@ -14,8 +15,15 @@ static void writeLog(const char* functionName, const char* status, const char* d
 	FILE* logfile = NULL;
 	errno_t err = 0;
 	char timebuf[MAX_SZ_ISO8601_TIME] = { 0 };
+	char timeForName[MAX_SZ_SHORT_ISO8601_TIME] = { 0 };
+	char path[MAX_PATH] = { 0 };
 
-	err = fopen_s(&logfile, logPath, "a");
+	getShortDateISO8601(timeForName, LOG_T);
+	strcat_s(path, MAX_PATH, logPath);
+	strcat_s(path, MAX_PATH, timeForName);
+	strcat_s(path, MAX_PATH, ".log");
+
+	err = fopen_s(&logfile, path, "a");
 
 	if (!err) {
 		getDateISO8601(timebuf);
@@ -34,7 +42,7 @@ static void writeShortLog(long sn) {
 	char timebuf[MAX_SZ_SHORT_ISO8601_TIME] = { 0 };
 	char path[MAX_PATH] = { 0 };
 
-	getShortDateISO8601(timebuf);
+	getShortDateISO8601(timebuf, SHORT_LOG_T);
 	strcat_s(path, MAX_PATH, logShortPath);
 	strcat_s(path, MAX_PATH, timebuf);
 	strcat_s(path, MAX_PATH, ".log");
@@ -132,7 +140,7 @@ void getDateISO8601(char* out)
 	return;
 }
 
-void getShortDateISO8601(char* out)
+void getShortDateISO8601(char* out, char mode[MAX_SZ_STR_CFG])
 {
 	struct tm newtime;
 	__time64_t long_time;
@@ -140,7 +148,7 @@ void getShortDateISO8601(char* out)
 	_localtime64_s(&newtime, &long_time);
 	strftime(out, MAX_SZ_SHORT_ISO8601_TIME, "%F", &newtime);
 
-	if (!strcmp(SHORT_LOG_T, "d"))
+	if (!strcmp(mode, "h"))
 	{
 		char h[4] = { 0 };
 		sprintf_s(h, sizeof(h), "_%d", newtime.tm_hour);

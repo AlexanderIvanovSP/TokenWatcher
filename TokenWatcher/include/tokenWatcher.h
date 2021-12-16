@@ -19,6 +19,7 @@
 #pragma comment (lib, "AdvApi32.lib")
 
 #define DEFAULT_BUFLEN 512
+#define MAX_SIZE_SERVICE_NAME 256
 
 int sendReport(const char* err, const char* description);
 
