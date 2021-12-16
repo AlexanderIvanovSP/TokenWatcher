@@ -46,10 +46,10 @@ int main() {
 	strcat_s(cfgPath, MAX_PATH, NAME_CONFIG_FILE);
 
 	strcpy_s(logPath, MAX_PATH, mainPath);
-	strcat_s(logPath, MAX_PATH, LOG_FILE_NAME);
+	strcat_s(logPath, MAX_PATH, LOG_DIR_NAME);
 
 	strcpy_s(logShortPath, MAX_PATH, mainPath);
-	strcat_s(logShortPath, MAX_PATH, SHORT_LOG_FILE_NAME);
+	strcat_s(logShortPath, MAX_PATH, SHORT_LOG_DIR_NAME);
 
 	logShortMutex = CreateMutex(NULL, FALSE, NULL);
 	if (logShortMutex == NULL)

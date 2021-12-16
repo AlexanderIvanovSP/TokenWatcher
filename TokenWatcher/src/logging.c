@@ -20,6 +20,8 @@ static void writeLog(const char* functionName, const char* status, const char* d
 
 	getShortDateISO8601(timeForName, LOG_T);
 	strcat_s(path, MAX_PATH, logPath);
+	_mkdir(path);
+	strcat_s(path, MAX_PATH, LOG_FILE_NAME);
 	strcat_s(path, MAX_PATH, timeForName);
 	strcat_s(path, MAX_PATH, ".log");
 
@@ -44,6 +46,8 @@ static void writeShortLog(long sn) {
 
 	getShortDateISO8601(timebuf, SHORT_LOG_T);
 	strcat_s(path, MAX_PATH, logShortPath);
+	_mkdir(path);
+	strcat_s(path, MAX_PATH, SHORT_LOG_FILE_NAME);
 	strcat_s(path, MAX_PATH, timebuf);
 	strcat_s(path, MAX_PATH, ".log");
 

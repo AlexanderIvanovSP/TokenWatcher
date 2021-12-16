@@ -303,7 +303,7 @@ int loadGeneralLoop(void* ptr)
 	if (!strcmp(HTTP_MODE, "yes"))
 	{
 		getDateISO8601(timebuf);
-		sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"Status\": \"%s\", \"TimeStamp\": \"%s\"}", rvToStr(CKR_TOKEN_NOT_PRESENT), timebuf);
+		sprintf_s(response_body, DEFAULT_SIZE_HTTP_BODY, "{\"SERVICE_NAME\": \"%s\", \"Status\": \"%s\", \"TimeStamp\": \"%s\"}", REAL_NAME, rvToStr(CKR_TOKEN_NOT_PRESENT), timebuf);
 	}
 
 	while (ServiceStatus.dwCurrentState == SERVICE_RUNNING) {
