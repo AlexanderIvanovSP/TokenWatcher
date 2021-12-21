@@ -172,8 +172,8 @@ static void getTokenInfo(void* slot_ptr)
 \"DD\" : %d\
 }\
 }",
-"OK",
 REAL_NAME,
+"OK",
 timebuf,
 exTokenInfo.ulTokenType,
 (int)sizeof(tokenInfo.model), tokenInfo.model,
