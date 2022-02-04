@@ -29,7 +29,10 @@ const char* CurrentStateToStr(DWORD status);
 void WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 void WINAPI ServiceCtrlHandler(DWORD opcode);
 void getCurrentNameService(DWORD processId);
-
+/// <summary>
+/// Функция инициализирует службу
+/// </summary>
+/// <returns>Код возврата</returns>
 int main() {
 
 	SERVICE_TABLE_ENTRY DispatchTable[] = { {SERVICE_NAME, ServiceMain}, {NULL, NULL} };
@@ -85,7 +88,12 @@ int main() {
 
 	return 0;
 }
-
+/// <summary>
+/// Главный поток работы сервиса
+/// </summary>
+/// <param name="argc">не используется</param>
+/// <param name="argv">не используется</param>
+/// <returns>Код возврата</returns>
 void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	ServiceStatus.dwServiceType = SERVICE_WIN32;
@@ -135,7 +143,11 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	return;
 }
-
+/// <summary>
+/// Функция конвертирует состояние службы в строку
+/// </summary>
+/// <param name="status">Статус службы</param>
+/// <returns>Статус в строковом формате</returns>
 const char* CurrentStateToStr(DWORD status)
 {
 	switch (status) {
@@ -151,7 +163,11 @@ const char* CurrentStateToStr(DWORD status)
 	default: return "SERVICE_STATE_UNKNOWN";
 	}
 }
-
+/// <summary>
+/// Хендлер для обработки сигналов службы
+/// </summary>
+/// <param name="Opcode">Код события</param>
+/// <returns>-</returns>
 void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
 	char buf[DEFAULT_BUFLEN] = { 0 };
@@ -207,7 +223,10 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
 	return;
 }
-
+/// <summary>
+/// Функция возвращает имя службы
+/// </summary>
+/// <param name="processId">pid-процесса службы</param>
 void getCurrentNameService(DWORD processId)
 {
 	SC_HANDLE hSCM = OpenSCManager(NULL, NULL,

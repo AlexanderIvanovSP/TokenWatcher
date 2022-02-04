@@ -5,13 +5,15 @@
 #define TOKEN_ERR_FLAG "ERR_READ_TOKEN"
 #define CKR_ERR_LOAD_LIBRARY	"CKR_ERR_LOAD_LIBRARY"
 
-
-#define DEFAULT_HTTP_HEADER "HTTP/1.1 200 OK\r\nVersion: HTTP/1.1\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
-
 extern SERVICE_STATUS ServiceStatus;
 extern CHAR REAL_NAME[MAX_SIZE_SERVICE_NAME];
 extern char mainPath[MAX_PATH];
-
+/// <summary>
+/// Функция отправляет буфер данных на сервер 1с
+/// </summary>
+/// <param name="buf">Данные</param>
+/// <param name="size">Размер данных</param>
+/// <returns>Код возврата</returns>
 int sendDataTo1C(char* buf, int size)
 {
 	WSADATA wsaData;
@@ -115,7 +117,12 @@ int sendDataTo1C(char* buf, int size)
 	logging(__FUNCTION__, "OK", (char*)buf);
 	return 0;
 }
-
+/// <summary>
+/// Функция ковертирует hex-строку в число
+/// </summary>
+/// <param name="in">hex-строка</param>
+/// <param name="len">Длина строки</param>
+/// <returns>Число</returns>
 static long long ahex2num(unsigned char* in, CK_ULONG len) {
 
 	unsigned char* pin = in; // lets use pointer to loop through the string
@@ -129,7 +136,10 @@ static long long ahex2num(unsigned char* in, CK_ULONG len) {
 
 	return out;
 }
-
+/// <summary>
+/// Функция считывает информацию о токене
+/// </summary>
+/// <param name="slot_ptr">Указатель на слот токена</param>
 static void getTokenInfo(void* slot_ptr)
 {
 	CK_SLOT_ID slot = *(CK_SLOT_ID*)slot_ptr;
@@ -202,7 +212,10 @@ free_slot:
 	free(slot_ptr);
 	return;
 }
-
+/// <summary>
+/// Функция запускает обработку вставленного токена в отдельном потоке
+/// </summary>
+/// <param name="slot">Слот с токеном</param>
 static void tokenInserted(CK_SLOT_ID slot)
 {
 	uintptr_t thread;
@@ -211,7 +224,10 @@ static void tokenInserted(CK_SLOT_ID slot)
 		*slot_p = slot;
 	createThread(&thread, NULL_PTR, &getTokenInfo, slot_p);
 }
-
+/// <summary>
+/// Функция осуществляет мониторинг подключения токенов
+/// </summary>
+/// <param name="ptr">Параметры потока (не используется)</param>
 static void monitorSlotEvent(void* ptr)
 {
 	CK_RV rv = CKR_OK;
@@ -247,7 +263,11 @@ static void monitorSlotEvent(void* ptr)
 
 	_endthread();
 }
-
+/// <summary>
+/// Функция инициализирует путь к библиотеке Pkcs11
+/// </summary>
+/// <param name="mode">Режим поиска библиотеки</param>
+/// <param name="out">Путь к dll</param>
 static void convertPkcs11DllModeToPath(UINT mode, char* out)
 {
 	char path[MAX_PATH] = { 0 };
@@ -273,7 +293,12 @@ static void convertPkcs11DllModeToPath(UINT mode, char* out)
 
 	return;
 }
-
+/// <summary>
+/// Функция отправляет пакет с ошибкой на сервер 1с
+/// </summary>
+/// <param name="err">Ошибка</param>
+/// <param name="description">Описание ошибки</param>
+/// <returns>Код возврата</returns>
 int sendReport(const char* err, const char* description)
 {
 	char REPORT_MODE[MAX_SZ_STR_CFG] = { 0 };
@@ -289,7 +314,11 @@ int sendReport(const char* err, const char* description)
 
 	return sendDataTo1C(buf, (int)strnlen_s(buf, DEFAULT_BUFLEN));
 }
-
+/// <summary>
+/// Функция инициализирует главный поток по обработке токенов
+/// </summary>
+/// <param name="ptr">Параметры потока</param>
+/// <returns>Код возврата</returns>
 int loadGeneralLoop(void* ptr)
 {
 	int errorCode = 1;

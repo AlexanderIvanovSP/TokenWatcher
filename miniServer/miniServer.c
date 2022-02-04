@@ -18,7 +18,13 @@
 
 #define CFG_SECTION_CONNECT "CONNECTION"
 #define CFG_KEY_PORT "PORT"
-
+/// <summary>
+/// Функция считывает конфигурацию сервера
+/// </summary>
+/// <param name="section"></param>
+/// <param name="key"></param>
+/// <param name="out"></param>
+/// <returns></returns>
 static DWORD readConfigIni(char* section, char* key, char* out) {
 
 	char cfgPath[MAX_PATH] = { 0 };
@@ -37,7 +43,10 @@ static DWORD readConfigIni(char* section, char* key, char* out) {
 		cfgPath
 	);
 }
-
+/// <summary>
+/// Функция инициализирует сервер
+/// </summary>
+/// <returns>Код возврата</returns>
 int __cdecl main(void)
 {
 	WSADATA wsaData;

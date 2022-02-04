@@ -9,7 +9,12 @@ char SHORT_LOG_MODE[MAX_SZ_STR_CFG] = { 0 };
 char SHORT_LOG_T[MAX_SZ_STR_CFG] = { 0 };
 char logShortPath[MAX_PATH] = { 0 };
 extern HANDLE logShortMutex;
-
+/// <summary>
+/// Функция осуществляет запись сообщения в лог файл
+/// </summary>
+/// <param name="functionName">Имя функции</param>
+/// <param name="status">Статус вызова функции</param>
+/// <param name="description">Дополнительное описание</param>
 static void writeLog(const char* functionName, const char* status, const char* description) {
 
 	FILE* logfile = NULL;
@@ -20,7 +25,7 @@ static void writeLog(const char* functionName, const char* status, const char* d
 
 	getShortDateISO8601(timeForName, LOG_T);
 	strcat_s(path, MAX_PATH, logPath);
-	_mkdir(path);
+	(void)_mkdir(path);
 	strcat_s(path, MAX_PATH, LOG_FILE_NAME);
 	strcat_s(path, MAX_PATH, timeForName);
 	strcat_s(path, MAX_PATH, ".log");
@@ -36,7 +41,10 @@ static void writeLog(const char* functionName, const char* status, const char* d
 
 	return;
 }
-
+/// <summary>
+/// Функция осуществляет запись серийного номера в лог файл
+/// </summary>
+/// <param name="sn">Серийный номер</param>
 static void writeShortLog(long sn) {
 
 	FILE* logfile = NULL;
@@ -46,7 +54,7 @@ static void writeShortLog(long sn) {
 
 	getShortDateISO8601(timebuf, SHORT_LOG_T);
 	strcat_s(path, MAX_PATH, logShortPath);
-	_mkdir(path);
+	(void)_mkdir(path);
 	strcat_s(path, MAX_PATH, SHORT_LOG_FILE_NAME);
 	strcat_s(path, MAX_PATH, timebuf);
 	strcat_s(path, MAX_PATH, ".log");
@@ -61,7 +69,10 @@ static void writeShortLog(long sn) {
 
 	return;
 }
-
+/// <summary>
+/// Функция реализует асинхронную запись лог файла серийных номеров
+/// </summary>
+/// <param name="sn">Серийный номер</param>
 void shortLogging(long sn) {
 
 	DWORD dwWaitResult;
@@ -89,7 +100,12 @@ void shortLogging(long sn) {
 
 	return;
 }
-
+/// <summary>
+/// Функция реализует асинхронную запись лог файла
+/// </summary>
+/// <param name="functionName">Имя функции</param>
+/// <param name="status">Статус вызова функции</param>
+/// <param name="description">Дополнительное описание</param>
 void logging(const char* functionName, const char* status, const char* description) {
 
 	DWORD dwWaitResult;
@@ -117,21 +133,28 @@ void logging(const char* functionName, const char* status, const char* descripti
 
 	return;
 }
-
+/// <summary>
+/// Функция отключает логирование
+/// </summary>
 void offLogMode() {
 
 	strcpy_s(LOG_MODE, MAX_SZ_STR_CFG, "no");
 
 	return;
 }
-
+/// <summary>
+/// Функция отключает логирование серийных номеров
+/// </summary>
 void offShortLogMode() {
 
 	strcpy_s(SHORT_LOG_MODE, MAX_SZ_STR_CFG, "no");
 
 	return;
 }
-
+/// <summary>
+/// Функция возвращает время в формате ISO8601
+/// </summary>
+/// <param name="out">Буфер для записи данных в формате ISO8601</param>
 void getDateISO8601(char* out)
 {
 	struct tm newtime;
@@ -143,7 +166,11 @@ void getDateISO8601(char* out)
 
 	return;
 }
-
+/// <summary>
+/// Функция возвращает время в формате ISO8601
+/// </summary>
+/// <param name="out">Буфер для записи данных в формате ISO8601</param>
+/// <param name="mode">ФорматЖ только дата или + часы</param>
 void getShortDateISO8601(char* out, char mode[MAX_SZ_STR_CFG])
 {
 	struct tm newtime;

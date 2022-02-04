@@ -7,7 +7,10 @@
 extern SERVICE_STATUS ServiceStatus;
 char response_body[DEFAULT_SIZE_HTTP_BODY] = { 0 };
 char HTTP_MODE[MAX_SZ_STR_CFG] = { 0 };
-
+/// <summary>
+/// Функция реализует основной цикл работы http-сервера
+/// </summary>
+/// <returns>Код завершения потока (неиспользуется)</returns>
 static int  startHttpServer()
 {
 	WSADATA wsaData;
@@ -111,7 +114,10 @@ static int  startHttpServer()
 
 	return 0;
 }
-
+/// <summary>
+/// Функция реализует запуск http-сервера
+/// </summary>
+/// <param name="ptr">Параметры инициализации потока (неиспользуется)</param>
 void httpServerLoop(void* ptr)
 {
 
