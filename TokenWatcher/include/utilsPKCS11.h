@@ -21,21 +21,5 @@ extern BOOL pkcs11LibState;
 int init_pkcs11(char* pkcsPath);
 /* Функция для деинициализации библиотеки PKCS#11 */
 int free_pkcs11();
-/* Функция для получения списка слотов */
-int get_slot_list(CK_SLOT_ID_PTR* slots_ptr, CK_ULONG_PTR slotCount);
-
-/* Функция для удобного поиска объектов на токене */
-int findObjects(CK_SESSION_HANDLE session, CK_ATTRIBUTE_PTR attributes, CK_ULONG attrCount,
-	CK_OBJECT_HANDLE objects[], CK_ULONG* objectsCount);
-
-/* Функция для получения закрытого ГОСТ ключа на токене */
-int find_private_key(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE_PTR privateKey);
-/* Функция для получения открытого ГОСТ ключа на токене */
-int find_public_key(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE_PTR publicKey);
-/* Функция для получения сертификата ключа на токене */
-int find_certificate(CK_SESSION_HANDLE session, CK_OBJECT_HANDLE_PTR certificate);
-
-/* Функция для удобной проверки поддержки конкретного механизма на токене */
-int mech_supports(CK_SLOT_ID slot, CK_MECHANISM_TYPE mech, int* mechIsSupported);
 
 #endif // UTILS_h
