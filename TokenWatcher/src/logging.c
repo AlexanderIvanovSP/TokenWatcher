@@ -1,4 +1,4 @@
-#include "logging.h"
+п»ї#include "logging.h"
 
 char LOG_MODE[MAX_SZ_STR_CFG] = { 0 };
 char LOG_T[MAX_SZ_STR_CFG] = { 0 };
@@ -10,11 +10,11 @@ char SHORT_LOG_T[MAX_SZ_STR_CFG] = { 0 };
 char logShortPath[MAX_PATH] = { 0 };
 extern HANDLE logShortMutex;
 /// <summary>
-/// Функция осуществляет запись сообщения в лог файл
+/// Р¤СѓРЅРєС†РёСЏ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ Р·Р°РїРёСЃСЊ СЃРѕРѕР±С‰РµРЅРёСЏ РІ Р»РѕРі С„Р°Р№Р»
 /// </summary>
-/// <param name="functionName">Имя функции</param>
-/// <param name="status">Статус вызова функции</param>
-/// <param name="description">Дополнительное описание</param>
+/// <param name="functionName">РРјСЏ С„СѓРЅРєС†РёРё</param>
+/// <param name="status">РЎС‚Р°С‚СѓСЃ РІС‹Р·РѕРІР° С„СѓРЅРєС†РёРё</param>
+/// <param name="description">Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРµ РѕРїРёСЃР°РЅРёРµ</param>
 static void writeLog(const char* functionName, const char* status, const char* description) {
 
 	FILE* logfile = NULL;
@@ -42,9 +42,9 @@ static void writeLog(const char* functionName, const char* status, const char* d
 	return;
 }
 /// <summary>
-/// Функция осуществляет запись серийного номера в лог файл
+/// Р¤СѓРЅРєС†РёСЏ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ Р·Р°РїРёСЃСЊ СЃРµСЂРёР№РЅРѕРіРѕ РЅРѕРјРµСЂР° РІ Р»РѕРі С„Р°Р№Р»
 /// </summary>
-/// <param name="sn">Серийный номер</param>
+/// <param name="sn">РЎРµСЂРёР№РЅС‹Р№ РЅРѕРјРµСЂ</param>
 static void writeShortLog(long sn) {
 
 	FILE* logfile = NULL;
@@ -70,9 +70,9 @@ static void writeShortLog(long sn) {
 	return;
 }
 /// <summary>
-/// Функция реализует асинхронную запись лог файла серийных номеров
+/// Р¤СѓРЅРєС†РёСЏ СЂРµР°Р»РёР·СѓРµС‚ Р°СЃРёРЅС…СЂРѕРЅРЅСѓСЋ Р·Р°РїРёСЃСЊ Р»РѕРі С„Р°Р№Р»Р° СЃРµСЂРёР№РЅС‹С… РЅРѕРјРµСЂРѕРІ
 /// </summary>
-/// <param name="sn">Серийный номер</param>
+/// <param name="sn">РЎРµСЂРёР№РЅС‹Р№ РЅРѕРјРµСЂ</param>
 void shortLogging(long sn) {
 
 	DWORD dwWaitResult;
@@ -101,11 +101,11 @@ void shortLogging(long sn) {
 	return;
 }
 /// <summary>
-/// Функция реализует асинхронную запись лог файла
+/// Р¤СѓРЅРєС†РёСЏ СЂРµР°Р»РёР·СѓРµС‚ Р°СЃРёРЅС…СЂРѕРЅРЅСѓСЋ Р·Р°РїРёСЃСЊ Р»РѕРі С„Р°Р№Р»Р°
 /// </summary>
-/// <param name="functionName">Имя функции</param>
-/// <param name="status">Статус вызова функции</param>
-/// <param name="description">Дополнительное описание</param>
+/// <param name="functionName">РРјСЏ С„СѓРЅРєС†РёРё</param>
+/// <param name="status">РЎС‚Р°С‚СѓСЃ РІС‹Р·РѕРІР° С„СѓРЅРєС†РёРё</param>
+/// <param name="description">Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРµ РѕРїРёСЃР°РЅРёРµ</param>
 void logging(const char* functionName, const char* status, const char* description) {
 
 	DWORD dwWaitResult;
@@ -134,7 +134,7 @@ void logging(const char* functionName, const char* status, const char* descripti
 	return;
 }
 /// <summary>
-/// Функция отключает логирование
+/// Р¤СѓРЅРєС†РёСЏ РѕС‚РєР»СЋС‡Р°РµС‚ Р»РѕРіРёСЂРѕРІР°РЅРёРµ
 /// </summary>
 void offLogMode() {
 
@@ -143,7 +143,7 @@ void offLogMode() {
 	return;
 }
 /// <summary>
-/// Функция отключает логирование серийных номеров
+/// Р¤СѓРЅРєС†РёСЏ РѕС‚РєР»СЋС‡Р°РµС‚ Р»РѕРіРёСЂРѕРІР°РЅРёРµ СЃРµСЂРёР№РЅС‹С… РЅРѕРјРµСЂРѕРІ
 /// </summary>
 void offShortLogMode() {
 
@@ -152,9 +152,9 @@ void offShortLogMode() {
 	return;
 }
 /// <summary>
-/// Функция возвращает время в формате ISO8601
+/// Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ С„РѕСЂРјР°С‚Рµ ISO8601
 /// </summary>
-/// <param name="out">Буфер для записи данных в формате ISO8601</param>
+/// <param name="out">Р‘СѓС„РµСЂ РґР»СЏ Р·Р°РїРёСЃРё РґР°РЅРЅС‹С… РІ С„РѕСЂРјР°С‚Рµ ISO8601</param>
 void getDateISO8601(char* out)
 {
 	struct tm newtime;
@@ -167,10 +167,10 @@ void getDateISO8601(char* out)
 	return;
 }
 /// <summary>
-/// Функция возвращает время в формате ISO8601
+/// Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ С„РѕСЂРјР°С‚Рµ ISO8601
 /// </summary>
-/// <param name="out">Буфер для записи данных в формате ISO8601</param>
-/// <param name="mode">ФорматЖ только дата или + часы</param>
+/// <param name="out">Р‘СѓС„РµСЂ РґР»СЏ Р·Р°РїРёСЃРё РґР°РЅРЅС‹С… РІ С„РѕСЂРјР°С‚Рµ ISO8601</param>
+/// <param name="mode">Р¤РѕСЂРјР°С‚Р– С‚РѕР»СЊРєРѕ РґР°С‚Р° РёР»Рё + С‡Р°СЃС‹</param>
 void getShortDateISO8601(char* out, char mode[MAX_SZ_STR_CFG])
 {
 	struct tm newtime;

@@ -1,4 +1,4 @@
-#define WIN32_LEAN_AND_MEAN
+п»ї#define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
 #include "tokenWatcher.h"
@@ -30,9 +30,9 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv);
 void WINAPI ServiceCtrlHandler(DWORD opcode);
 void getCurrentNameService(DWORD processId);
 /// <summary>
-/// Функция инициализирует службу
+/// Р¤СѓРЅРєС†РёСЏ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ СЃР»СѓР¶Р±Сѓ
 /// </summary>
-/// <returns>Код возврата</returns>
+/// <returns>РљРѕРґ РІРѕР·РІСЂР°С‚Р°</returns>
 int main() {
 
 	SERVICE_TABLE_ENTRY DispatchTable[] = { {SERVICE_NAME, ServiceMain}, {NULL, NULL} };
@@ -89,11 +89,11 @@ int main() {
 	return 0;
 }
 /// <summary>
-/// Главный поток работы сервиса
+/// Р“Р»Р°РІРЅС‹Р№ РїРѕС‚РѕРє СЂР°Р±РѕС‚С‹ СЃРµСЂРІРёСЃР°
 /// </summary>
-/// <param name="argc">не используется</param>
-/// <param name="argv">не используется</param>
-/// <returns>Код возврата</returns>
+/// <param name="argc">РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ</param>
+/// <param name="argv">РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ</param>
+/// <returns>РљРѕРґ РІРѕР·РІСЂР°С‚Р°</returns>
 void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 
 	ServiceStatus.dwServiceType = SERVICE_WIN32;
@@ -144,10 +144,10 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR* argv) {
 	return;
 }
 /// <summary>
-/// Функция конвертирует состояние службы в строку
+/// Р¤СѓРЅРєС†РёСЏ РєРѕРЅРІРµСЂС‚РёСЂСѓРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СЃР»СѓР¶Р±С‹ РІ СЃС‚СЂРѕРєСѓ
 /// </summary>
-/// <param name="status">Статус службы</param>
-/// <returns>Статус в строковом формате</returns>
+/// <param name="status">РЎС‚Р°С‚СѓСЃ СЃР»СѓР¶Р±С‹</param>
+/// <returns>РЎС‚Р°С‚СѓСЃ РІ СЃС‚СЂРѕРєРѕРІРѕРј С„РѕСЂРјР°С‚Рµ</returns>
 const char* CurrentStateToStr(DWORD status)
 {
 	switch (status) {
@@ -164,9 +164,9 @@ const char* CurrentStateToStr(DWORD status)
 	}
 }
 /// <summary>
-/// Хендлер для обработки сигналов службы
+/// РҐРµРЅРґР»РµСЂ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё СЃРёРіРЅР°Р»РѕРІ СЃР»СѓР¶Р±С‹
 /// </summary>
-/// <param name="Opcode">Код события</param>
+/// <param name="Opcode">РљРѕРґ СЃРѕР±С‹С‚РёСЏ</param>
 /// <returns>-</returns>
 void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 
@@ -224,9 +224,9 @@ void WINAPI ServiceCtrlHandler(DWORD Opcode) {
 	return;
 }
 /// <summary>
-/// Функция возвращает имя службы
+/// Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ СЃР»СѓР¶Р±С‹
 /// </summary>
-/// <param name="processId">pid-процесса службы</param>
+/// <param name="processId">pid-РїСЂРѕС†РµСЃСЃР° СЃР»СѓР¶Р±С‹</param>
 void getCurrentNameService(DWORD processId)
 {
 	SC_HANDLE hSCM = OpenSCManager(NULL, NULL,

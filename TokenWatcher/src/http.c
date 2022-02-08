@@ -1,4 +1,4 @@
-
+п»ї
 #include "http.h"
 
 #define DEFAULT_HTTP_HEADER "HTTP/1.1 200 OK\r\nVersion: HTTP/1.1\r\nContent-Type: application/json; charset=utf-8\r\nContent-Length: "
@@ -8,9 +8,9 @@ extern SERVICE_STATUS ServiceStatus;
 char response_body[DEFAULT_SIZE_HTTP_BODY] = { 0 };
 char HTTP_MODE[MAX_SZ_STR_CFG] = { 0 };
 /// <summary>
-/// Функция реализует основной цикл работы http-сервера
+/// Р¤СѓРЅРєС†РёСЏ СЂРµР°Р»РёР·СѓРµС‚ РѕСЃРЅРѕРІРЅРѕР№ С†РёРєР» СЂР°Р±РѕС‚С‹ http-СЃРµСЂРІРµСЂР°
 /// </summary>
-/// <returns>Код завершения потока (неиспользуется)</returns>
+/// <returns>РљРѕРґ Р·Р°РІРµСЂС€РµРЅРёСЏ РїРѕС‚РѕРєР° (РЅРµРёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)</returns>
 static int  startHttpServer()
 {
 	WSADATA wsaData;
@@ -115,9 +115,9 @@ static int  startHttpServer()
 	return 0;
 }
 /// <summary>
-/// Функция реализует запуск http-сервера
+/// Р¤СѓРЅРєС†РёСЏ СЂРµР°Р»РёР·СѓРµС‚ Р·Р°РїСѓСЃРє http-СЃРµСЂРІРµСЂР°
 /// </summary>
-/// <param name="ptr">Параметры инициализации потока (неиспользуется)</param>
+/// <param name="ptr">РџР°СЂР°РјРµС‚СЂС‹ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРѕС‚РѕРєР° (РЅРµРёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)</param>
 void httpServerLoop(void* ptr)
 {
 
